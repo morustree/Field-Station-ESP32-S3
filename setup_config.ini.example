@@ -1,0 +1,11 @@
+# ESP32-S3 Field Station Configuration
+# Fill in the values below between quotes.
+
+[wifi]
+ssid = "YOUR_WIFI_NAME"
+password = "YOUR_WIFI_PASSWORD"
+
+[mqtt]
+# Your computer's local IP address (run 'ipconfig' in terminal)
+broker_ip = "192.168.X.XXX"
+device_id = "esp32s3_01"

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard ESP32-S3 Field Station</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Icon Libraries -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Paho MQTT Library via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ESP32-S3 Telemetry</h1>
+            <div class="header-right">
+                <div id="connection-status" class="status disconnected">Disconnected</div>
+                <button id="theme-btn" title="Toggle Theme"><i data-lucide="moon"></i></button>
+                <button id="lang-btn" title="Change Language">
+                    <img src="https://hatscripts.github.io/circle-flags/flags/br.svg" width="24" height="24">
+                </button>
+            </div>
+        </header>
+
+        <section class="config-panel">
+            <div class="input-group">
+                <label for="broker-host" data-i18n="host-label">Broker Host (IP):</label>
+                <input type="text" id="broker-host" placeholder="Ex: 192.168.1.100" value="localhost">
+            </div>
+            <div class="input-group">
+                <label for="broker-port" data-i18n="port-label">Port (WS):</label>
+                <input type="number" id="broker-port" value="9001">
+            </div>
+            <button id="connect-btn" data-i18n="connect-btn">Connect</button>
+        </section>
+
+        <section class="info-bar card">
+            <div class="info-item">
+                <span class="label" data-i18n="last-measure-label">Last measurement (ID):</span>
+                <span id="device-id" class="value-small">None</span>
+            </div>
+            <div class="info-item">
+                <span class="label" data-i18n="date-time-label">Date / Time:</span>
+                <span id="last-update" class="value-small">--</span>
+            </div>
+        </section>
+
+        <main class="dashboard-grid">
+            <div class="card">
+                <h3 data-i18n="card-temp">Temperature</h3>
+                <p class="value" id="temp-val">--</p>
+                <span class="unit">°C</span>
+            </div>
+            <div class="card">
+                <h3 data-i18n="card-hum">Humidity</h3>
+                <p class="value" id="hum-val">--</p>
+                <span class="unit">%</span>
+            </div>
+            <div class="card">
+                <h3 data-i18n="card-lux">Luminosity</h3>
+                <p class="value" id="lux-val">--</p>
+                <span class="unit">%</span>
+            </div>
+            <div class="card">
+                <h3 data-i18n="card-dist">Distance</h3>
+                <p class="value" id="dist-val">--</p>
+                <span class="unit">mm</span>
+            </div>
+            <div class="card">
+                <h3 data-i18n="card-pres">Pressure</h3>
+                <p class="value" id="pres-val">--</p>
+                <span class="unit">hPa</span>
+            </div>
+        </main>
+
+        <section class="log-panel">
+            <h3 data-i18n="history-title">History</h3>
+            <div class="table-wrapper">
+                <table id="telemetry-table">
+                    <thead>
+                        <tr>
+                            <th data-i18n="th-datetime">Date/Time</th>
+                            <th data-i18n="th-ts">Timestamp</th>
+                            <th data-i18n="th-device">Device ID</th>
+                            <th data-i18n="th-temp">Temp [°C]</th>
+                            <th data-i18n="th-hum">Hum [%]</th>
+                            <th data-i18n="th-lux">Lux [%]</th>
+                            <th data-i18n="th-pres">Pres [hPa]</th>
+                            <th data-i18n="th-dist">Dist [mm]</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Rows via JS -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="table-footer">
+                <button id="clear-btn" data-i18n="clear-btn">Clear History</button>
+                <p class="table-limit-note" data-i18n="table-note">Max 500 rows. Oldest are deleted.</p>
+            </div>
+        </section>
+    </div>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

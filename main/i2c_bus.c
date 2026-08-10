@@ -8,6 +8,10 @@ static i2c_master_bus_handle_t s_i2c_bus_handle = NULL;
 
 esp_err_t i2c_bus_init(void)
 {
+    if (s_i2c_bus_handle != NULL) {
+        return ESP_OK;
+    }
+
     i2c_master_bus_config_t i2c_mst_config = {
         .clk_source = I2C_CLK_SRC_DEFAULT,
         .i2c_port = I2C_MASTER_NUM,
@@ -37,11 +41,32 @@ esp_err_t i2c_bus_add_device(uint8_t device_address, i2c_master_dev_handle_t *de
 
 esp_err_t i2c_bus_read_registers(i2c_master_dev_handle_t dev_handle, uint8_t reg_addr, uint8_t *data, size_t len)
 {
-    return i2c_master_transmit_receive(dev_handle, &reg_addr, 1, data, len, pdMS_TO_TICKS(1000));
+    if (dev_handle == NULL || data == NULL) return ESP_ERR_INVALID_ARG;
+
+    uint8_t *reg = malloc(1);
+    uint8_t *temp_buf = malloc(len);
+    if (reg == NULL || temp_buf == NULL) {
+        free(reg);
+        free(temp_buf);
+        return ESP_ERR_NO_MEM;
+    }
+
+    reg[0] = reg_addr;
+    esp_err_t err = i2c_master_transmit_receive(dev_handle, reg, 1, temp_buf, len, pdMS_TO_TICKS(1000));
+
+    if (err == ESP_OK) {
+        memcpy(data, temp_buf, len);
+    }
+
+    free(reg);
+    free(temp_buf);
+    return err;
 }
 
 esp_err_t i2c_bus_write_register(i2c_master_dev_handle_t dev_handle, uint8_t reg_addr, const uint8_t *data, size_t len)
 {
+    if (dev_handle == NULL || data == NULL) return ESP_ERR_INVALID_ARG;
+
     size_t write_len = len + 1;
     uint8_t *write_buffer = malloc(write_len);
     if (write_buffer == NULL) {

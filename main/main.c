@@ -7,13 +7,12 @@
 #include "driver/gpio.h"
 #include "i2c_bus.h"
 #include "bme280_sensor.h"
-#include "vl53l0x_sensor.h"
 #include "ldr_sensor.h"
 #include "network.h"
 #include "storage.h"
 #include "telemetry.h"
 
-#define DEEP_SLEEP_TIME_US (10 * 1000000ULL) // 5 minutos
+#define DEEP_SLEEP_TIME_US ((uint64_t)(DEEP_SLEEP_MINUTES * 60 * 1000000ULL))
 #define JSON_BUF_SIZE      512
 
 static void drain_pending_backups(void)
@@ -38,71 +37,60 @@ static void drain_pending_backups(void)
     heap_caps_free(pending_json);
 }
 
+
 void app_main(void)
 {
-    // Inicializar Hardware
+    // Initializations
     i2c_bus_init();
     storage_init();
+    vTaskDelay(pdMS_TO_TICKS(20));
 
-    // Acionar Sensores
     bme280_init();
-    vl53l0x_init();
-    vTaskDelay(pdMS_TO_TICKS(250)); // Aumentado para dar tempo aos sensores I2C
 
-    // Medições
+    // Measurements
     bme280_data_t bme_data = {0};
-    uint16_t dist = 0;
     int ldr_raw = 0;
 
     bme280_read_data(&bme_data);
-    vl53l0x_read_distance_power_efficient(&dist);
     ldr_read_raw(&ldr_raw);
 
-    // Conectividade com Sincronização Estrita
+    // Network & Telemetry
     char *json_buf = (char *)heap_caps_malloc(JSON_BUF_SIZE, MALLOC_CAP_SPIRAM);
-    if (json_buf == NULL) return;
+    if (json_buf != NULL) {
+        telemetry_data_t td = {0};
 
-    telemetry_data_t td = {0};
+        if (network_init(WIFI_STA_SSID, WIFI_STA_PASSWORD, MQTT_BROKER_URI) == ESP_OK) {
+            if (network_sync_time() == ESP_OK) {
+                telemetry_fill(&td, &bme_data, ldr_raw);
+                telemetry_format_json(&td, json_buf, JSON_BUF_SIZE);
 
-    if (network_init(WIFI_STA_SSID, WIFI_STA_PASSWORD, MQTT_BROKER_URI) == ESP_OK) {
-        // Trava de Tempo Estrita
-        if (network_sync_time() == ESP_OK) {
-            telemetry_fill(&td, &bme_data, ldr_raw, dist);
-            telemetry_format_json(&td, json_buf, JSON_BUF_SIZE);
+                if (network_publish(MQTT_TOPIC, json_buf, 1) == ESP_OK) {
+                    drain_pending_backups();
+                } else {
+                    storage_append_backup(json_buf);
+                }
+            }
+            network_disconnect();
+        } else {
+            time_t now;
+            struct tm timeinfo;
+            time(&now);
+            localtime_r(&now, &timeinfo);
 
-            if (network_publish(MQTT_TOPIC, json_buf, 1) == ESP_OK) {
-                drain_pending_backups();
-            } else {
+            if (timeinfo.tm_year > (2020 - 1900)) {
+                telemetry_fill(&td, &bme_data, ldr_raw);
+                telemetry_format_json(&td, json_buf, JSON_BUF_SIZE);
                 storage_append_backup(json_buf);
             }
-        } else {
-            // Se o tempo estourou, não nada é transmitido nem backup é salvo
         }
-        network_disconnect();
-    } else {
-        // rede offline total
-        time_t now;
-        struct tm timeinfo;
-        time(&now);
-        localtime_r(&now, &timeinfo);
-
-        if (timeinfo.tm_year > (2020 - 1900)) {
-            telemetry_fill(&td, &bme_data, ldr_raw, dist);
-            telemetry_format_json(&td, json_buf, JSON_BUF_SIZE);
-            storage_append_backup(json_buf);
-        } else {
-            // Offline e sem tempo. Nada a fazer.
-        }
+        heap_caps_free(json_buf);
     }
 
-    heap_caps_free(json_buf);
-
-    // Deep Sleep
+    // One-Shot Power Down & Sleep
     bme280_power_down();
-    vl53l0x_power_down();
 
+    gpio_set_level(LDR_POWER_PIN, 0);
     gpio_hold_en(LDR_POWER_PIN);
-    gpio_hold_en(VL53L0X_XSHUT_PIN);
 
     esp_sleep_enable_timer_wakeup(DEEP_SLEEP_TIME_US);
     esp_deep_sleep_start();

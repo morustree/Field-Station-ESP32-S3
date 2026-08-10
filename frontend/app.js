@@ -24,7 +24,6 @@ const translations = {
         "card-temp": "Temperature",
         "card-hum": "Humidity",
         "card-lux": "Luminosity",
-        "card-dist": "Distance",
         "card-pres": "Pressure",
         "history-title": "History",
         "th-datetime": "Date/Time",
@@ -34,7 +33,6 @@ const translations = {
         "th-hum": "Hum [%]",
         "th-lux": "Lum [Raw]",
         "th-pres": "Pres [hPa]",
-        "th-dist": "Dist [mm]",
         "clear-btn": "Clear History",
         "table-note": "Max 500 rows. Oldest are deleted.",
         none: "None",
@@ -53,7 +51,6 @@ const translations = {
         "card-temp": "Temperatura",
         "card-hum": "Umidade",
         "card-lux": "Luminosidade",
-        "card-dist": "Distância",
         "card-pres": "Pressão",
         "history-title": "Histórico",
         "th-datetime": "Data/Hora",
@@ -63,7 +60,6 @@ const translations = {
         "th-hum": "Umid [%]",
         "th-lux": "Lum [ADC]",
         "th-pres": "Pres [hPa]",
-        "th-dist": "Dist [mm]",
         "clear-btn": "Limpar Histórico",
         "table-note": "Máximo de 500 linhas. As mais antigas são excluídas.",
         none: "Nenhum",
@@ -111,7 +107,6 @@ function setLanguage(lang) {
 const elTemp = document.getElementById('temp-val');
 const elHum = document.getElementById('hum-val');
 const elLux = document.getElementById('lux-val');
-const elDist = document.getElementById('dist-val');
 const elPres = document.getElementById('pres-val');
 const elDevice = document.getElementById('device-id');
 const elTime = document.getElementById('last-update');
@@ -134,7 +129,6 @@ function addRow(data, dateObj) {
         <td>${data.metrics?.pressure?.toFixed(2) || '0.00'}</td>
         <td>${data.metrics?.relative_humidity?.toFixed(2) || '0.00'}</td>
         <td>${data.metrics?.luminosity || '0'}</td>
-        <td>${data.metrics?.distance_mm || '0'}</td>
     `;
 
     tableBody.appendChild(row);
@@ -167,7 +161,6 @@ function connect() {
                 if (data.metrics.temperature !== undefined) elTemp.innerText = data.metrics.temperature.toFixed(2);
                 if (data.metrics.relative_humidity !== undefined) elHum.innerText = data.metrics.relative_humidity.toFixed(2);
                 if (data.metrics.luminosity !== undefined) elLux.innerText = data.metrics.luminosity;
-                if (data.metrics.distance_mm !== undefined) elDist.innerText = data.metrics.distance_mm;
                 if (data.metrics.pressure !== undefined) elPres.innerText = data.metrics.pressure.toFixed(2);
             }
 

@@ -9,3 +9,8 @@ password = "YOUR_WIFI_PASSWORD"
 # Your computer's local IP address (run 'ipconfig' in terminal)
 broker_ip = "XXX.XXX.X.XXX"
 device_id = "esp32s3_01"
+
+[station]
+# Interval between measurements in minutes.
+# Recommended minimum: 10 seconds (~0.16 min).
+deep_sleep_minutes = 5

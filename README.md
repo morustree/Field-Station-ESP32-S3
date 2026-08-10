@@ -18,7 +18,7 @@ Below are the main directories and files that make up the solution:
 
 - `main/`: Contains the main C source code.
   - `main.c`: One-Shot cycle control logic and task orchestration.
-  - `*_sensor.c/h`: Modular drivers for BME280 / GY-BME280, VL53L0X / WCMCU-531 VL53L0/1XV2, and LDR 7mm.
+  - `*_sensor.c/h`: Modular drivers for BME280 / GY-BME280 and LDR 7mm.
   - `network.c/h` & `telemetry.c/h`: Wi-Fi/MQTT management and JSON data formatting.
   - `storage.c/h`: LittleFS persistence layer implementation.
 - `partitions.csv`: Custom flash partition table.
@@ -26,15 +26,14 @@ Below are the main directories and files that make up the solution:
 - `frontend/`: Web Application (Dashboard) for real-time monitoring.
   - `index.html`, `app.js`, `style.css`: Interface developed in Vanilla JS with MQTT integration.
 - `mosquitto/`: Configurations for the Mosquitto MQTT Broker.
-- `docker-compose.yml`: Infrastructure orchestration.
-- `setup.ps1`: Automated configuration script (Windows).
-- `setup_config.ini`: User configuration file.
+- `setup.sh` / `setup.ps1`: Automated configuration scripts (Linux/Mac/Windows).
+- `setup_config.ini`: User configuration file (Wi-Fi, MQTT, and Deep Sleep interval).
 
 ---
 
 ### 🛠️ Circuit Description & Technical Design
 
-The electronic design focuses on I2C bus stability and the elimination of parasitic currents during deep sleep. The system is powered by an external switching power supply of +5V DC / 1A.
+The system is powered by an external switching power supply of +5V DC / 1A.
 
 ![Circuit Diagram](./ckt_img.png)
 
@@ -45,10 +44,6 @@ The electronic design focuses on I2C bus stability and the elimination of parasi
 | **BME280** | VCC | **3.3V** | Constant power. Enters *Sleep Mode* (0.1uA) via software. |
 | | SCL / SDA | **GPIO 9 / 8** | Main I2C bus. |
 | | GND | **Negative** | Common power reference. |
-| **VL53L0X** | VIN | **3.3V** | Constant power. |
-| | SCL / SDA | **GPIO 9 / 8** | Shared I2C bus. |
-| | XSHUT | **GPIO 12** | Hardware standby control (Standby = 5uA). |
-| | GND | **Negative** | Common power reference. |
 | **LDR 7mm** | Terminal 1 | **GPIO 6** | **Power Gating**: The divider is only energized during reading to save power. |
 | | Terminal 2 | **GPIO 4** | Analog input (**ADC1_CH3**) connected to the divider's center point. |
 | **10kΩ Resistor**| Terminal 1 | **GPIO 4** | Acts as a Pull-down for the LDR. |
@@ -57,7 +52,7 @@ The electronic design focuses on I2C bus stability and the elimination of parasi
 | | GND pin | **Negative** | Ground interconnection with the power supply and sensors. |
 
 #### ⚡ Power Supply and Cabling
-*   **Adapter**: Model DSA-5CAA-05 (Switching Adapter).
+*   **Adapter (Example)**: Model DSA-5CAA-05 (Switching Adapter).
 *   **Specifications**: Input 100-240V AC | Output +5V DC 1A.
 *   **Physical Connection**: A USB-A cable was modified (cut end with exposed wires) to inject power directly into the breadboard. Although the project includes a **USB-A to USB-C** cable, it is used exclusively for flashing the firmware due to its short length. The modified cable allows for the reach of the external power source and centralized power distribution.
 *   **Power via UART**: The **UART** port of the ESP32-S3 DevKitC-1 accepts 5V power. However, in the final design, direct connection to the pins was chosen.
@@ -68,28 +63,59 @@ The electronic design focuses on I2C bus stability and the elimination of parasi
 
 #### 1. Software Prerequisites
 
-1.  **ESP-IDF v5.x**: Official framework. **Recommended**: VS Code + Espressif IDF Extension.
-2.  **Docker Desktop**: Required for the MQTT Broker.
-3.  **Git**: For cloning the repository.
+1.  **Visual Studio Code**: [Download here](https://code.visualstudio.com/).
+2.  **ESP-IDF Extension/SDK**: [Official Setup Guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/get-started/index.html).
+3.  **Eclipse Mosquitto**: [Download here](https://mosquitto.org/download/). Required for the MQTT Broker. **Do not install as a service** if you want it to run only when needed.
+4.  **Git (Optional)**: [Download here](https://git-scm.com/). Used to clone the project via terminal. If you don't have it installed, the easiest way is to download the project directly from the GitHub interface.
 
 #### 2. Fast Setup
 
-1.  **Clone**: Clone this repository to your computer:
+*Note: Cloning can be performed using Command Prompt, PowerShell, or directly via GitHub Desktop/Web.*
+
+1.  **Clone**: Open your terminal, navigate to your projects folder, and run:
     ```bash
+    cd /path/to/your/folder
     git clone https://github.com/morustree/Field-Station-ESP32-S3.git
     cd Field-Station-ESP32-S3
     ```
-2.  **Run Setup**: Ensure **Docker Desktop** is running. Then, open PowerShell in the project root and run:
-    ```powershell
+2.  **Run Setup**: Open your terminal (Prompt, PowerShell, or Bash) in the project root and run the appropriate script for your OS:
+    ```bash
+    # For Windows (PowerShell)
     .\setup.ps1
+
+    # For Linux / Mac (Bash)
+    chmod +x setup.sh && ./setup.sh
     ```
     *The script will create your `setup_config.ini` file and open it for editing. Fill in your details, save, and run the script again to finish.*
-3.  **Flash**: In the ESP-IDF terminal, run:
+3.  **Flash**: 
+    - Open the cloned project folder in **VS Code**.
+    - Connect your **ESP32-S3** to the computer via USB.
+    - If the device is not detected, put it into **Download Mode**: hold the **BOOT** button, press **RESET**, and then release **BOOT**.
+    - In the ESP-IDF terminal, run:
     ```bash
     idf.py build flash
     ```
-    *Note: The `idf.py` command requires the environment variables to be set. If using **VS Code**, you can simply use the ESP-IDF extension icons (Build Project and Flash Device).*
-4.  **Dashboard**: Open `frontend/index.html` in your browser. It will connect automatically.
+    *Note: The `idf.py` command requires the environment variables to be set. If using **VS Code**, you can simply use the ESP-IDF extension icons (Build Project and Flash Device). After flashing, you may need to press the **RESET** button on the board to start the firmware.*
+4.  **Dashboard**: 
+    - **Step 1**: Start the MQTT Broker. In a separate terminal (from the project root), run:
+      ```bash
+      mosquitto -c mosquitto/mosquitto.conf -v
+      ```
+      *Note: If 'mosquitto' is not recognized, use the full path: `& "C:\Program Files\mosquitto\mosquitto.exe" -c mosquitto/mosquitto.conf -v` (on Windows). On Linux/macOS, ensure it is installed via your package manager (`apt` or `brew`).*
+    - **Step 2**: In your main terminal, launch the dashboard:
+      ```bash
+      # Windows (PowerShell)
+      .\frontend\index.html
+
+      # macOS
+      open frontend/index.html
+
+      # Linux
+      xdg-open frontend/index.html
+      ```
+    *Note: The broker must be running for the dashboard to receive data. Closing the terminal stops the broker.*
+
+![Viewer](./dashboard.png)
 
 ---
 
@@ -98,7 +124,8 @@ The electronic design focuses on I2C bus stability and the elimination of parasi
 - **ESP-IDF v5.x**: Professional framework for native C development.
 - **PSRAM (SPIRAM)**: Use of 2MB external RAM for JSON buffer allocation.
 - **LittleFS**: Power-failure resilient file system for local telemetry storage.
-- **One-Shot Architecture**: Linear life cycle (Wake up -> Measure -> Transmit -> Sleep) to maximize battery autonomy.
+- **One-Shot Architecture**: Linear life cycle (Wake up -> Measure -> Transmit -> Sleep). The interval can be customized in `setup_config.ini` (default: 5 min).
+  - *Safety Note*: The absolute technical minimum for ESP32-S3 deep sleep is on the order of milliseconds, but for application stability and power efficiency, at least 10 seconds is recommended.
 - **NTP/SNTP Sync**: Strict synchronization. The system validates real time before persisting or sending data to ensure chronology.
 - **Silent Production**: Firmware optimized for production.
 
@@ -118,7 +145,7 @@ Abaixo, os principais diretórios e arquivos que compõem a solução:
 
 - `main/`: Contém o código-fonte principal em C.
   - `main.c`: Lógica de controle do ciclo One-Shot e orquestração de tarefas.
-  - `*_sensor.c/h`: Drivers modulares para BME280 / GY-BME280, VL53L0X / WCMCU-531 VL53L0/1XV2 e LDR 7mm.
+  - `*_sensor.c/h`: Drivers modulares para BME280 / GY-BME280 e LDR 7mm.
   - `network.c/h` & `telemetry.c/h`: Gestão de Wi-Fi/MQTT e formatação de dados JSON.
   - `storage.c/h`: Implementação da camada de persistência LittleFS.
 - `partitions.csv`: Tabela de partições customizada.
@@ -126,15 +153,14 @@ Abaixo, os principais diretórios e arquivos que compõem a solução:
 - `frontend/`: Aplicação Web (Dashboard) para monitoramento em tempo real.
   - `index.html`, `app.js`, `style.css`: Interface em Vanilla JS com integração MQTT.
 - `mosquitto/`: Configurações para o Broker MQTT Mosquitto.
-- `docker-compose.yml`: Orquestração da infraestrutura.
-- `setup.ps1`: Script de configuração automática (Windows).
-- `setup_config.ini`: Arquivo de configurações do usuário.
+- `setup.sh` / `setup.ps1`: Scripts de configuração automática (Linux/Mac/Windows).
+- `setup_config.ini`: Arquivo de configurações do usuário (Wi-Fi, MQTT e intervalo de Deep Sleep).
 
 ---
 
 ### 🛠️ Descrição do Circuito
 
-O design eletrônico foca na estabilidade do barramento I2C e na eliminação de correntes parasitas durante o sono profundo. O sistema é alimentado por uma fonte externa chaveada de +5V DC / 1A.
+O sistema é alimentado por uma fonte externa chaveada de +5V DC / 1A.
 
 ![Circuit Diagram](./ckt_img.png)
 
@@ -145,10 +171,6 @@ O design eletrônico foca na estabilidade do barramento I2C e na eliminação de
 | **BME280**            | VCC | **3.3V** | Alimentação constante. Entra em *Sleep Mode* (0.1uA) via software. |
 |                       | SCL / SDA | **GPIO 9 / 8** | Barramento I2C principal. |
 |                       | GND | **Negativo** | Referência comum de energia. |
-| **VL53L0X**           | VIN | **3.3V** | Alimentação constante. |
-|                       | SCL / SDA | **GPIO 9 / 8** | Barramento I2C compartilhado. |
-|                       | XSHUT | **GPIO 12** | Controle de standby via hardware (Standby = 5uA). |
-|                       | GND | **Negativo** | Referência comum de energia. |
 | **LDR 7mm**           | Terminal 1 | **GPIO 6** | **Power Gating**: O divisor só é energizado durante a leitura para economizar energia. |
 |                       | Terminal 2 | **GPIO 4** | Entrada analógica (**ADC1_CH3**) conectada ao ponto central do divisor. |
 | **Resistor 10kΩ**     | Terminal 1 | **GPIO 4** | Atua como Pull-down para o LDR. |
@@ -157,7 +179,7 @@ O design eletrônico foca na estabilidade do barramento I2C e na eliminação de
 |                       | pino GND | **Negativo** | Interconexão de massa com a fonte e sensores. |
 
 #### ⚡ Fonte de Alimentação e Cabeamento
-*   **Adaptador**: Modelo DSA-5CAA-05 (Switching Adapter).
+*   **Adaptador (Exemplo)**: Modelo DSA-5CAA-05 (Switching Adapter).
 *   **Especificações**: Input 100-240V AC | Output +5V DC 1A.
 *   **Conexão Física**: Um cabo USB-A foi modificado (extremidade cortada com fios expostos) para injetar a alimentação diretamente na protoboard. Embora o projeto conte com um cabo **USB-A para USB-C**, este é utilizado exclusivamente para gravação do firmware devido ao seu comprimento reduzido. O cabo modificado permite o alcance da fonte externa e a distribuição centralizada de energia.
 *   **Alimentação via UART**: A porta **UART** do ESP32-S3 DevKitC-1 aceita alimentação de 5V. No entanto, no design final, optou-se pela conexão direta nos pinos.
@@ -168,28 +190,59 @@ O design eletrônico foca na estabilidade do barramento I2C e na eliminação de
 
 #### 1. Pré-requisitos de Software
 
-1.  **ESP-IDF v5.x**: Framework oficial. **Recomendado**: VS Code + Extensão Espressif IDF.
-2.  **Docker Desktop**: Necessário para o Broker MQTT local.
-3.  **Git**: Para clonagem do repositório.
+1.  **Visual Studio Code**: [Baixe aqui](https://code.visualstudio.com/).
+2.  **Extensão/SDK ESP-IDF**: [Guia Oficial de Instalação](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/get-started/index.html).
+3.  **Eclipse Mosquitto**: [Baixe aqui](https://mosquitto.org/download/). Necessário para o Broker MQTT. **Não instale como serviço** se preferir que ele execute apenas quando você desejar.
+4.  **Git (Opcional)**: [Baixe aqui](https://git-scm.com/). Usado para clonar o projeto via terminal. Caso não o tenha instalado, o caminho mais fácil é baixar o projeto diretamente pela interface do GitHub.
 
 #### 2. Configuração Rápida
 
-1.  **Clonar**: Clone este repositório em seu computador:
+*Nota: A clonagem pode ser feita via Prompt de Comando, PowerShell ou diretamente pelo GitHub Desktop/Web.*
+
+1.  **Clonar**: Abra seu terminal, navegue até a pasta de seus projetos e execute:
     ```bash
+    cd /caminho/para/sua/pasta
     git clone https://github.com/morustree/Field-Station-ESP32-S3.git
     cd Field-Station-ESP32-S3
     ```
-2.  **Executar Setup**: Certifique-se de que o **Docker Desktop** esteja rodando. Então, abra o PowerShell na raiz do projeto e execute:
-    ```powershell
+2.  **Executar Setup**: Abra seu terminal (Prompt, PowerShell ou Bash) na raiz do projeto e execute o script apropriado para o seu sistema operacional:
+    ```bash
+    # Para Windows (PowerShell)
     .\setup.ps1
+
+    # Para Linux / Mac (Bash)
+    chmod +x setup.sh && ./setup.sh
     ```
     *O script criará o arquivo `setup_config.ini` e o abrirá para edição. Preencha seus dados, salve e execute o script novamente para concluir.*
-3.  **Gravar**: No terminal do ESP-IDF, execute:
+3.  **Gravar**: 
+    - Abra a pasta do projeto clonado no **VS Code**.
+    - Conecte seu **ESP32-S3** ao computador via USB.
+    - Caso o dispositivo não seja reconhecido, coloque-o em **Modo de Gravação**: segure o botão **BOOT**, pressione **RESET** e solte o **BOOT**.
+    - No terminal do ESP-IDF, execute:
     ```bash
     idf.py build flash
     ```
-    *Nota: O comando `idf.py` exige que as variáveis de ambiente estejam configuradas. Se estiver usando o **VS Code**, você pode simplesmente usar os ícones da extensão ESP-IDF (Build e Flash).*
-4.  **Dashboard**: Abra `frontend/index.html` no navegador. Ele conectará automaticamente.
+    *Nota: O comando `idf.py` exige que as variáveis de ambiente estejam configuradas. Se estiver usando o **VS Code**, você pode simplesmente usar os ícones da extensão ESP-IDF (Build e Flash). Após o término da gravação, você deve pressionar o botão **RESET** físico na placa para iniciar o firmware.*
+4.  **Dashboard**: 
+    - **Passo 1**: Inicie o Broker MQTT. Em um terminal à parte (na raiz do projeto), execute:
+      ```bash
+      mosquitto -c mosquitto/mosquitto.conf -v
+      ```
+      *Nota: Caso 'mosquitto' não seja reconhecido, use o caminho completo: `& "C:\Program Files\mosquitto\mosquitto.exe" -c mosquitto/mosquitto.conf -v` (no Windows). No Linux/macOS, verifique se foi instalado via gerenciador de pacotes (`apt` ou `brew`).*
+    - **Passo 2**: No seu terminal principal, abra o dashboard:
+      ```bash
+      # Windows (PowerShell)
+      .\frontend\index.html
+
+      # macOS
+      open frontend/index.html
+
+      # Linux
+      xdg-open frontend/index.html
+      ```
+    *Nota: O broker precisa estar rodando para que o dashboard receba os dados. Fechar o terminal encerra o broker.*
+
+![Viewer](./dashboard.png)
 
 ---
 
@@ -198,7 +251,8 @@ O design eletrônico foca na estabilidade do barramento I2C e na eliminação de
 - **ESP-IDF v5.x**: Framework profissional para desenvolvimento nativo em C.
 - **PSRAM (SPIRAM)**: Uso de 2MB de RAM externa para alocação de buffers JSON.
 - **LittleFS**: Sistema de arquivos resiliente a falhas de energia para armazenamento local de telemetria.
-- **One-Shot Architecture**: Ciclo de vida linear (Acordar -> Medir -> Transmitir -> Dormir) para maximizar a autonomia da bateria.
+- **One-Shot Architecture**: Ciclo de vida linear (Acordar -> Medir -> Transmitir -> Dormir). O intervalo pode ser personalizado no arquivo `setup_config.ini` (padrão: 5 min).
+  - *Nota de Segurança*: O mínimo técnico para o deep sleep do ESP32-S3 é da ordem de milissegundos, mas para estabilidade da aplicação e eficiência energética, recomenda-se pelo menos 10 segundos.
 - **NTP/SNTP Sync**: Sincronização estrita. O sistema valida o tempo real antes de persistir ou enviar dados para garantir a cronologia.
 - **Produção Silenciosa**: Firmware otimizado para produção.
 

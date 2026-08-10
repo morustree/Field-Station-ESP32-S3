@@ -12,8 +12,8 @@ static int16_t  dig_T2, dig_T3;
 static uint16_t dig_P1;
 static int16_t  dig_P2, dig_P3, dig_P4, dig_P5, dig_P6, dig_P7, dig_P8, dig_P9;
 static uint8_t  dig_H1, dig_H3;
-static int16_t  dig_H2;
-static int8_t   dig_H4, dig_H5, dig_H6;
+static int16_t  dig_H2, dig_H4, dig_H5;
+static int8_t   dig_H6;
 
 static esp_err_t bme280_read_calibration(void)
 {
@@ -41,8 +41,8 @@ static esp_err_t bme280_read_calibration(void)
 
     dig_H2 = (int16_t)((h_calib[1] << 8) | h_calib[0]);
     dig_H3 = h_calib[2];
-    dig_H4 = (int8_t)((h_calib[3] << 4) | (h_calib[4] & 0x0F));
-    dig_H5 = (int8_t)((h_calib[5] << 4) | (h_calib[4] >> 4));
+    dig_H4 = (int16_t)((int8_t)h_calib[3] << 4) | (h_calib[4] & 0x0F);
+    dig_H5 = (int16_t)((int8_t)h_calib[5] << 4) | (h_calib[4] >> 4);
     dig_H6 = (int8_t)h_calib[6];
 
     return ESP_OK;
@@ -58,7 +58,21 @@ esp_err_t bme280_init(void)
     // Reset via software
     uint8_t reset_cmd[2] = {0xE0, 0xB6};
     i2c_master_transmit(s_bme280_handle, reset_cmd, 2, pdMS_TO_TICKS(50));
-    vTaskDelay(pdMS_TO_TICKS(10));
+    vTaskDelay(pdMS_TO_TICKS(15)); // Aguarda o sensor reiniciar de fato
+
+    // FORÇAR SLEEP IMEDIATO PÓS-RESET
+    // Filtro IIR desligado (Reg 0xF5 bits 4:2 em 000)
+    uint8_t config_val = 0x00;
+    i2c_bus_write_register(s_bme280_handle, 0xF5, &config_val, 1);
+
+    // Configura Umidade em X1 (Reg 0xF2)
+    uint8_t ctrl_hum = 0x01;
+    i2c_bus_write_register(s_bme280_handle, 0xF2, &ctrl_hum, 1);
+
+    // Configura Temp X1, Pressão X1 e coloca em SLEEP MODE (Reg 0xF4)
+    // Bits: Temp(001) Press(001) Mode(00) -> 0x24
+    uint8_t ctrl_meas_sleep = 0x24;
+    i2c_bus_write_register(s_bme280_handle, 0xF4, &ctrl_meas_sleep, 1);
 
     return bme280_read_calibration();
 }
@@ -75,30 +89,34 @@ esp_err_t bme280_read_data(bme280_data_t *data)
 {
     if (s_bme280_handle == NULL || data == NULL) return ESP_ERR_INVALID_STATE;
 
-    // Configuração de Oversampling e Forced Mode (leitura única)
-    uint8_t ctrl_hum = 0x01; // x1
-    uint8_t ctrl_meas = 0x25; // Press x1, Temp x1, Forced Mode
-
+    // Configura Umidade em X1
+    uint8_t ctrl_hum = 0x01;
     i2c_bus_write_register(s_bme280_handle, 0xF2, &ctrl_hum, 1);
-    i2c_bus_write_register(s_bme280_handle, 0xF4, &ctrl_meas, 1);
 
-    vTaskDelay(pdMS_TO_TICKS(15)); // Aguarda medição
+    // Dispara o FORCED MODE (A escrita em 0xF4 valida o 0xF2 configurado acima)
+    // Temp X1 (001), Press X1 (001), Mode Forced (01) -> 0x25
+    uint8_t ctrl_meas_forced = 0x25;
+    i2c_bus_write_register(s_bme280_handle, 0xF4, &ctrl_meas_forced, 1);
+
+    //Tempo de medição com Oversampling X1 em tudo é de apenas ~9.3ms max.
+    vTaskDelay(pdMS_TO_TICKS(15));
 
     uint8_t raw[8] = {0};
     esp_err_t err = i2c_bus_read_registers(s_bme280_handle, 0xF7, raw, 8);
     if (err != ESP_OK) return err;
 
-    // Fórmulas de compensação omitidas por brevidade, mas mantidas a lógica de cálculo original
+    // Compensação de Temperatura, Pressão e Umidade (Bosch Datasheet Fixed-Point)
     int32_t adc_p = (int32_t)(((uint32_t)raw[0] << 12) | ((uint32_t)raw[1] << 4) | ((uint32_t)raw[2] >> 4));
     int32_t adc_t = (int32_t)(((uint32_t)raw[3] << 12) | ((uint32_t)raw[4] << 4) | ((uint32_t)raw[5] >> 4));
     int32_t adc_h = (int32_t)(((uint32_t)raw[6] << 8) | (uint32_t)raw[7]);
 
-    // [Cálculos de var1, var2, t_fine e p...]
-    // (Mantendo os cálculos do arquivo original aqui)
+    // Cálculos de t_fine, Temperatura e Pressão
     int32_t var1, var2, t_fine;
     var1 = (((adc_t >> 3) - ((int32_t)dig_T1 << 1))) * ((int32_t)dig_T2) >> 11;
     var2 = (((((adc_t >> 4) - ((int32_t)dig_T1)) * ((adc_t >> 4) - ((int32_t)dig_T1))) >> 12) * ((int32_t)dig_T3)) >> 14;
     t_fine = var1 + var2;
+
+    // O cálculo de temperatura agora utiliza o t_fine ajustado
     data->temperature = (float)((t_fine * 5 + 128) >> 8) / 100.0f;
 
     var1 = (((int32_t)t_fine) >> 1) - (int32_t)64000;

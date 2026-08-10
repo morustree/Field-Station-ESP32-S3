@@ -61,10 +61,15 @@ venv/
 .venv/
 env/
 
+# IDEs
+.idea/
+.vscode/
+.history/
+
 # Language Servers
 .clangd/
+.clangd
 .ccls-cache/
-compile_commands.json
 
 # Windows specific
 Thumbs.db

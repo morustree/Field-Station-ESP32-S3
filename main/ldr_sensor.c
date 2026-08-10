@@ -4,8 +4,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#define ADC_SAMPLES 32
-#define LDR_WARMUP_MS 5
+#define ADC_SAMPLES 16
+#define LDR_WARMUP_MS 2
 
 esp_err_t ldr_read_raw(int *out_raw)
 {
@@ -44,7 +44,7 @@ esp_err_t ldr_read_raw(int *out_raw)
     };
     adc_oneshot_config_channel(adc_handle, LDR_ADC_PIN, &config);
 
-    // Leitura com oversampling (média de 32 amostras)
+    // Leitura com oversampling
     int adc_sum = 0;
     int raw_read = 0;
     for (int i = 0; i < ADC_SAMPLES; i++) {

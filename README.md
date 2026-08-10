@@ -101,8 +101,8 @@ The system is powered by an external switching power supply of +5V DC / 1A.
       ```bash
       mosquitto -c mosquitto/mosquitto.conf -v
       ```
-      *Note: If 'mosquitto' is not recognized, use the full path: `& "C:\Program Files\mosquitto\mosquitto.exe" -c mosquitto/mosquitto.conf -v` (on Windows). On Linux/macOS, ensure it is installed via your package manager (`apt` or `brew`).*
-    - **Step 2**: In your main terminal, launch the dashboard:
+      **Keep this terminal window open.** *Note: If 'mosquitto' is not recognized, use the full path: `& "C:\Program Files\mosquitto\mosquitto.exe" -c mosquitto/mosquitto.conf -v` (on Windows). On Linux/macOS, ensure it is installed via your package manager (`apt` or `brew`).*
+    - **Step 2**: In your **main terminal** (or a new one), launch the dashboard:
       ```bash
       # Windows (PowerShell)
       .\frontend\index.html
@@ -228,8 +228,8 @@ O sistema é alimentado por uma fonte externa chaveada de +5V DC / 1A.
       ```bash
       mosquitto -c mosquitto/mosquitto.conf -v
       ```
-      *Nota: Caso 'mosquitto' não seja reconhecido, use o caminho completo: `& "C:\Program Files\mosquitto\mosquitto.exe" -c mosquitto/mosquitto.conf -v` (no Windows). No Linux/macOS, verifique se foi instalado via gerenciador de pacotes (`apt` ou `brew`).*
-    - **Passo 2**: No seu terminal principal, abra o dashboard:
+      **Mantenha esta janela do terminal aberta.** *Nota: Caso 'mosquitto' não seja reconhecido, use o caminho completo: `& "C:\Program Files\mosquitto\mosquitto.exe" -c mosquitto/mosquitto.conf -v` (no Windows). No Linux/macOS, verifique se foi instalado via gerenciador de pacotes (`apt` ou `brew`).*
+    - **Passo 2**: No seu **terminal principal** (ou em um novo), abra o dashboard:
       ```bash
       # Windows (PowerShell)
       .\frontend\index.html

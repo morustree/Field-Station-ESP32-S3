@@ -13,7 +13,7 @@
 #include "storage.h"
 #include "telemetry.h"
 
-#define DEEP_SLEEP_TIME_US (5 * 60 * 1000000ULL) // 5 minutos
+#define DEEP_SLEEP_TIME_US (10 * 1000000ULL) // 5 minutos
 #define JSON_BUF_SIZE      512
 
 static void drain_pending_backups(void)
@@ -40,16 +40,16 @@ static void drain_pending_backups(void)
 
 void app_main(void)
 {
-    // 1. Inicializar Hardware
+    // Inicializar Hardware
     i2c_bus_init();
     storage_init();
 
-    // 2. Acionar Sensores
+    // Acionar Sensores
     bme280_init();
     vl53l0x_init();
     vTaskDelay(pdMS_TO_TICKS(250)); // Aumentado para dar tempo aos sensores I2C
 
-    // 3. Medições
+    // Medições
     bme280_data_t bme_data = {0};
     uint16_t dist = 0;
     int ldr_raw = 0;
@@ -58,7 +58,7 @@ void app_main(void)
     vl53l0x_read_distance_power_efficient(&dist);
     ldr_read_raw(&ldr_raw);
 
-    // 4. Conectividade com Sincronização Estrita
+    // Conectividade com Sincronização Estrita
     char *json_buf = (char *)heap_caps_malloc(JSON_BUF_SIZE, MALLOC_CAP_SPIRAM);
     if (json_buf == NULL) return;
 
@@ -76,11 +76,11 @@ void app_main(void)
                 storage_append_backup(json_buf);
             }
         } else {
-            // Se o tempo falhou, não enviamos nada nem salvamos backup "sem data"
+            // Se o tempo estourou, não nada é transmitido nem backup é salvo
         }
         network_disconnect();
     } else {
-        // Caso de rede offline total, verificamos se temos tempo no RTC
+        // rede offline total
         time_t now;
         struct tm timeinfo;
         time(&now);
@@ -97,7 +97,7 @@ void app_main(void)
 
     heap_caps_free(json_buf);
 
-    // 5. Deep Sleep
+    // Deep Sleep
     bme280_power_down();
     vl53l0x_power_down();
 

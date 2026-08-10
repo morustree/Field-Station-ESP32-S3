@@ -21,7 +21,8 @@ Below are the main directories and files that make up the solution:
   - `*_sensor.c/h`: Modular drivers for BME280 / GY-BME280, VL53L0X / WCMCU-531 VL53L0/1XV2, and LDR 7mm.
   - `network.c/h` & `telemetry.c/h`: Wi-Fi/MQTT management and JSON data formatting.
   - `storage.c/h`: LittleFS persistence layer implementation.
-  - `secrets.h`: Credential configuration (generated via setup).
+- `partitions.csv`: Custom flash partition table.
+- `sdkconfig.defaults`: Base hardware configuration (PSRAM, Flash, CPU).
 - `frontend/`: Web Application (Dashboard) for real-time monitoring.
   - `index.html`, `app.js`, `style.css`: Interface developed in Vanilla JS with MQTT integration.
 - `mosquitto/`: Configurations for the Mosquitto MQTT Broker.
@@ -73,16 +74,21 @@ The electronic design focuses on I2C bus stability and the elimination of parasi
 
 #### 2. Fast Setup
 
-1.  **Configure**: Copy `setup_config.ini.example` to `setup_config.ini` and edit it with your Wi-Fi SSID, Password, and your computer's IP address.
-2.  **Run Setup**: Open PowerShell in the project root and run:
+1.  **Clone**: Clone this repository to your computer:
+    ```bash
+    git clone https://github.com/morustree/Field-Station-ESP32-S3.git
+    cd Field-Station-ESP32-S3
+    ```
+2.  **Run Setup**: Ensure **Docker Desktop** is running. Then, open PowerShell in the project root and run:
     ```powershell
     .\setup.ps1
     ```
-    *This script will generate your credentials, configure the dashboard, and start the MQTT broker.*
+    *The script will create your `setup_config.ini` file and open it for editing. Fill in your details, save, and run the script again to finish.*
 3.  **Flash**: In the ESP-IDF terminal, run:
     ```bash
     idf.py build flash
     ```
+    *Note: The `idf.py` command requires the environment variables to be set. If using **VS Code**, you can simply use the ESP-IDF extension icons (Build Project and Flash Device).*
 4.  **Dashboard**: Open `frontend/index.html` in your browser. It will connect automatically.
 
 ---
@@ -115,7 +121,8 @@ Abaixo, os principais diretórios e arquivos que compõem a solução:
   - `*_sensor.c/h`: Drivers modulares para BME280 / GY-BME280, VL53L0X / WCMCU-531 VL53L0/1XV2 e LDR 7mm.
   - `network.c/h` & `telemetry.c/h`: Gestão de Wi-Fi/MQTT e formatação de dados JSON.
   - `storage.c/h`: Implementação da camada de persistência LittleFS.
-  - `secrets.h`: Configuração de credenciais (gerado via setup).
+- `partitions.csv`: Tabela de partições customizada.
+- `sdkconfig.defaults`: Configurações base de hardware (PSRAM, Flash, CPU).
 - `frontend/`: Aplicação Web (Dashboard) para monitoramento em tempo real.
   - `index.html`, `app.js`, `style.css`: Interface em Vanilla JS com integração MQTT.
 - `mosquitto/`: Configurações para o Broker MQTT Mosquitto.
@@ -167,16 +174,21 @@ O design eletrônico foca na estabilidade do barramento I2C e na eliminação de
 
 #### 2. Configuração Rápida
 
-1.  **Configurar**: Copie `setup_config.ini.example` para `setup_config.ini` e edite-o com seu SSID, Senha do Wi-Fi e o IP do seu computador.
-2.  **Executar Setup**: Abra o PowerShell na raiz do projeto e execute:
+1.  **Clonar**: Clone este repositório em seu computador:
+    ```bash
+    git clone https://github.com/morustree/Field-Station-ESP32-S3.git
+    cd Field-Station-ESP32-S3
+    ```
+2.  **Executar Setup**: Certifique-se de que o **Docker Desktop** esteja rodando. Então, abra o PowerShell na raiz do projeto e execute:
     ```powershell
     .\setup.ps1
     ```
-    *Este script gerará suas credenciais, configurará o dashboard e iniciará o broker MQTT.*
+    *O script criará o arquivo `setup_config.ini` e o abrirá para edição. Preencha seus dados, salve e execute o script novamente para concluir.*
 3.  **Gravar**: No terminal do ESP-IDF, execute:
     ```bash
     idf.py build flash
     ```
+    *Nota: O comando `idf.py` exige que as variáveis de ambiente estejam configuradas. Se estiver usando o **VS Code**, você pode simplesmente usar os ícones da extensão ESP-IDF (Build e Flash).*
 4.  **Dashboard**: Abra `frontend/index.html` no navegador. Ele conectará automaticamente.
 
 ---

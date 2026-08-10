@@ -7,5 +7,5 @@ password = "YOUR_WIFI_PASSWORD"
 
 [mqtt]
 # Your computer's local IP address (run 'ipconfig' in terminal)
-broker_ip = "192.168.X.XXX"
+broker_ip = "XXX.XXX.X.XXX"
 device_id = "esp32s3_01"

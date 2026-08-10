@@ -32,7 +32,7 @@ const translations = {
         "th-ts": "Timestamp",
         "th-temp": "Temp [°C]",
         "th-hum": "Hum [%]",
-        "th-lux": "Lux [ADC]",
+        "th-lux": "Lum [Raw]",
         "th-pres": "Pres [hPa]",
         "th-dist": "Dist [mm]",
         "clear-btn": "Clear History",
@@ -61,7 +61,7 @@ const translations = {
         "th-ts": "Timestamp",
         "th-temp": "Temp [°C]",
         "th-hum": "Umid [%]",
-        "th-lux": "Lux [ADC]",
+        "th-lux": "Lum [ADC]",
         "th-pres": "Pres [hPa]",
         "th-dist": "Dist [mm]",
         "clear-btn": "Limpar Histórico",
@@ -94,6 +94,9 @@ function setLanguage(lang) {
     document.getElementById('lang-btn').innerHTML = lang === 'en'
         ? '<img src="https://hatscripts.github.io/circle-flags/flags/br.svg" width="28">'
         : '<img src="https://hatscripts.github.io/circle-flags/flags/us.svg" width="28">';
+
+    // Update units and placeholders
+    document.getElementById('lux-unit').innerText = lang === 'pt' ? 'ADC' : 'Raw';
 
     if (statusEl.classList.contains('connected')) statusEl.innerText = t.statusConnected;
     if (statusEl.classList.contains('disconnected')) statusEl.innerText = t.statusDisconnected;
@@ -128,9 +131,9 @@ function addRow(data, dateObj) {
         <td>${data.timestamp || '--'}</td>
         <td>${data.device_id || '??'}</td>
         <td>${data.metrics?.temperature?.toFixed(2) || '0.00'}</td>
+        <td>${data.metrics?.pressure?.toFixed(2) || '0.00'}</td>
         <td>${data.metrics?.relative_humidity?.toFixed(2) || '0.00'}</td>
         <td>${data.metrics?.luminosity || '0'}</td>
-        <td>${data.metrics?.pressure?.toFixed(2) || '0.00'}</td>
         <td>${data.metrics?.distance_mm || '0'}</td>
     `;
 
@@ -139,8 +142,14 @@ function addRow(data, dateObj) {
 }
 
 function connect() {
-    const host = document.getElementById('broker-host').value;
-    const port = parseInt(document.getElementById('broker-port').value);
+    if (typeof AUTO_CONFIG === 'undefined') {
+        console.error("Configuração não encontrada! Execute o setup.ps1.");
+        statusEl.innerText = "Config Error";
+        return;
+    }
+
+    const host = AUTO_CONFIG.host;
+    const port = AUTO_CONFIG.port;
     const clientId = "web_client_" + Math.random().toString(16).substr(2, 8);
 
     client = new Paho.MQTT.Client(host, port, clientId);
@@ -197,15 +206,12 @@ function connect() {
 
 // Inicialização
 document.addEventListener('DOMContentLoaded', () => {
-    lucide.createIcons();
+    // Definir ícone inicial do tema baseado na classe do body
+    const isDark = document.body.classList.contains('dark-theme');
+    document.getElementById('theme-btn').innerHTML = isDark ? '<i data-lucide="sun"></i>' : '<i data-lucide="moon"></i>';
 
-    // Carregar configuração automática se existir
-    if (typeof AUTO_CONFIG !== 'undefined') {
-        document.getElementById('broker-host').value = AUTO_CONFIG.host;
-        document.getElementById('broker-port').value = AUTO_CONFIG.port;
-        console.log("Configurações automáticas carregadas.");
-        connect(); // Conecta automaticamente
-    }
+    lucide.createIcons();
+    connect(); // Conecta automaticamente usando AUTO_CONFIG
 });
 
 document.getElementById('lang-btn').addEventListener('click', () => {
@@ -213,11 +219,6 @@ document.getElementById('lang-btn').addEventListener('click', () => {
 });
 
 document.getElementById('theme-btn').addEventListener('click', toggleTheme);
-
-document.getElementById('connect-btn').addEventListener('click', () => {
-    if (client && client.isConnected()) client.disconnect();
-    connect();
-});
 
 document.getElementById('clear-btn').addEventListener('click', () => {
     tableBody.innerHTML = '';

@@ -16,24 +16,21 @@ if (Test-Path "setup_config.ini") {
     $choice = Read-Host "`nSelect an option (1-3)"
 
     if ($choice -eq '1') {
-        notepad "setup_config.ini"
-        Write-Host "`nAfter saving and closing the file, run .\setup.ps1 again to finish.`n" -ForegroundColor White
-        exit
+        Start-Process notepad "setup_config.ini" -Wait
+        Write-Host "Applying new settings..." -ForegroundColor Yellow
     } elseif ($choice -eq '2') {
         Remove-Item "setup_config.ini"
         Write-Host "File removed. Restarting setup..." -ForegroundColor Yellow
-        # Re-run logic
         Copy-Item "setup_config.ini.example" "setup_config.ini"
-        notepad "setup_config.ini"
-        exit
+        Start-Process notepad "setup_config.ini" -Wait
+        Write-Host "Applying new settings..." -ForegroundColor Yellow
     }
 } else {
     Write-Host "Configuration file not found. Creating 'setup_config.ini' for you..." -ForegroundColor Yellow
     Copy-Item "setup_config.ini.example" "setup_config.ini"
     Write-Host "Opening file for editing. Fill in your details and save it." -ForegroundColor Cyan
-    notepad "setup_config.ini"
-    Write-Host "`nAfter saving and closing the file, run .\setup.ps1 again to finish.`n" -ForegroundColor White
-    exit
+    Start-Process notepad "setup_config.ini" -Wait
+    Write-Host "Applying settings..." -ForegroundColor Yellow
 }
 
 Write-Host "Reading settings from setup_config.ini..." -ForegroundColor Yellow

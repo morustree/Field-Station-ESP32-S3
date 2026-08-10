@@ -242,7 +242,7 @@ O sistema é alimentado por uma fonte externa chaveada de +5V DC / 1A.
       ```
     *Nota: O broker precisa estar rodando para que o dashboard receba os dados. Fechar o terminal encerra o broker.*
 
-![Viewer](./dashboard.png)
+![Viewer](./dashboard_pt.png)
 
 ---
 

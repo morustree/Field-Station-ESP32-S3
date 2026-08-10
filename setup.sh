@@ -23,12 +23,10 @@ if [ -f "setup_config.ini" ]; then
 
     if [ "$choice" == "1" ]; then
         if command -v nano >/dev/null 2>&1; then nano "setup_config.ini"; elif command -v vi >/dev/null 2>&1; then vi "setup_config.ini"; else echo "Edit manually."; fi
-        exit 0
     elif [ "$choice" == "2" ]; then
         rm "setup_config.ini"
         cp "setup_config.ini.example" "setup_config.ini"
         if command -v nano >/dev/null 2>&1; then nano "setup_config.ini"; elif command -v vi >/dev/null 2>&1; then vi "setup_config.ini"; else echo "Edit manually."; fi
-        exit 0
     fi
 else
     echo -e "\033[0;33mConfiguration file not found. Creating 'setup_config.ini' for you...\033[0m"
@@ -42,9 +40,6 @@ else
     else
         echo "Please edit 'setup_config.ini' manually."
     fi
-
-    echo -e "\nAfter saving and closing the file, run ./setup.sh again to finish.\n"
-    exit 0
 fi
 
 echo -e "\033[0;33mReading settings from setup_config.ini...\033[0m"

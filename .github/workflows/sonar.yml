@@ -9,6 +9,7 @@ jobs:
   sonarcloud:
     name: Build and Analyze
     runs-on: ubuntu-latest
+    container: espressif/idf:release-v5.5
     
     steps:
       - name: Checkout código
@@ -16,10 +17,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Instalar o ESP-IDF e Ferramentas
-        uses: espressif/esp-idf-ci-action@v1
-        with:
-          esp_idf_version: v5.5.4
+      - name: Instalar Dependências do Sistema
+        run: |
+          apt-get update && apt-get install -y curl unzip
 
       - name: Baixar o Build Wrapper do SonarCloud
         run: |
@@ -30,8 +30,6 @@ jobs:
 
       - name: Compilar o projeto dentro do Build Wrapper
         run: |
-          # Ativa o ambiente interno da Action do ESP-IDF e faz o build vigiado
-          . $IDF_PATH/export.sh
           build-wrapper-linux-x86-64 --out-dir build_wrapper_output_directory idf.py build
 
       - name: Executar análise do SonarCloud

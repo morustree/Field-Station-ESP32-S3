@@ -17,21 +17,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Instalar Dependências do Sistema
+      - name: Compilar o projeto (Gera compile_commands.json)
         run: |
-          apt-get update && apt-get install -y curl unzip
-
-      - name: Baixar o Build Wrapper do SonarCloud
-        run: |
-          mkdir -p $HOME/.sonar
-          curl -sSLo $HOME/.sonar/build-wrapper-linux-x86.zip https://sonarcloud.io
-          unzip -o $HOME/.sonar/build-wrapper-linux-x86.zip -d $HOME/.sonar/
-          # Injeta o caminho correto no PATH do GitHub Actions
-          echo "$HOME/.sonar/build-wrapper-linux-x86-64" >> $GITHUB_PATH
-
-      - name: Compilar o projeto dentro do Build Wrapper
-        run: |
-          build-wrapper-linux-x86-64 --out-dir build_wrapper_output_directory idf.py build
+          idf.py build
 
       - name: Executar análise do SonarCloud
         uses: SonarSource/sonarqube-scan-action@v5
@@ -40,7 +28,7 @@ jobs:
             -Dsonar.organization=morustree
             -Dsonar.projectKey=morustree_Field-Station-ESP32-S3
             -Dsonar.sources=main
-            -Dsonar.cfamily.compile-commands=build_wrapper_output_directory/compile_commands.json
+            -Dsonar.cfamily.compile-commands=build/compile_commands.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

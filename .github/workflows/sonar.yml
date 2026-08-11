@@ -17,7 +17,7 @@ jobs:
           fetch-depth: 0
 
       - name: Instalar o ESP-IDF e Ferramentas
-        uses: espressif/idf-github-actions@v2
+        uses: espressif/esp-idf-ci-action@v1
         with:
           esp_idf_version: v5.5.4
 
@@ -30,7 +30,7 @@ jobs:
 
       - name: Compilar o projeto dentro do Build Wrapper
         run: |
-          # Garante que as variáveis do ESP-IDF estão ativas e compila vigiado pelo Sonar
+          # Ativa o ambiente interno da Action do ESP-IDF e faz o build vigiado
           . $IDF_PATH/export.sh
           build-wrapper-linux-x86-64 --out-dir build_wrapper_output_directory idf.py build
 

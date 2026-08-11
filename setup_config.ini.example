@@ -1,5 +1,6 @@
 # ESP32-S3 Field Station Configuration
-# Fill in the values below between quotes.
+# Fill in the values below between quotes (DO NOT remove the quotes "").
+# Preencha os valores abaixo entre aspas (NÃO remova as aspas "").
 
 [wifi]
 ssid = "YOUR_WIFI_NAME"

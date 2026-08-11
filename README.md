@@ -70,41 +70,46 @@ The system is powered by an external switching power supply of +5V DC / 1A.
 
 #### 2. Fast Setup
 
-*Note: Cloning can be performed using Command Prompt, PowerShell, or directly via GitHub Desktop/Web.*
+*Note: Cloning can be performed using terminal, or directly via GitHub Web (Download ZIP).*
 
-1.  **Clone**: Open your terminal, navigate to your projects folder, and run:
+1.  **Clone / Download**: 
+     - **Option A (ZIP)**: Download and **extract (unzip)** the ZIP file. Open the extracted folder in VS Code. *Note: GitHub creates a nested folder (e.g., `Field-Station-ESP32-S3-main`). Ensure you open the root folder that contains the `main/` directory.*
+     - **Option B (Git)**: Open **Visual Studio Code**, open the internal terminal (Ctrl+Shift+`), and run:
+      ```bash
+      cd /path/to/your/folder
+      git clone https://github.com/morustree/Field-Station-ESP32-S3.git
+      cd Field-Station-ESP32-S3
+      ```
+2.  **Run Setup**: Run the appropriate script for your OS in the VS Code terminal:
     ```bash
-    cd /path/to/your/folder
-    git clone https://github.com/morustree/Field-Station-ESP32-S3.git
-    cd Field-Station-ESP32-S3
-    ```
-2.  **Run Setup**: Open your terminal (Prompt, PowerShell, or Bash) in the project root and run the appropriate script for your OS:
-    ```bash
-    # For Windows (PowerShell)
+    # For Windows
     .\setup.ps1
+    # If the command above fails due to security restrictions, use:
+    powershell -ExecutionPolicy Bypass -File .\setup.ps1
 
-    # For Linux / Mac (Bash)
+    # For Linux / Mac
     chmod +x setup.sh && ./setup.sh
+    # If the command above fails, try:
+    bash setup.sh
     ```
-    *The script will create your `setup_config.ini` file and open it for editing. Fill in your details, save, and run the script again to finish.*
-3.  **Flash**: 
-    - Open the cloned project folder in **VS Code**.
+    *The script will create your `setup_config.ini` file and open it for editing. Fill in your details (keep the quotation marks ""), **save, and close the file** to finish the setup.*
+3.  **Build project and Flash Device**: 
     - Connect your **ESP32-S3** to the computer via USB.
     - If the device is not detected, put it into **Download Mode**: hold the **BOOT** button, press **RESET**, and then release **BOOT**.
     - In the ESP-IDF terminal, run:
     ```bash
     idf.py build flash
     ```
-    *Note: The `idf.py` command requires the environment variables to be set. If using **VS Code**, you can simply use the ESP-IDF extension icons (Build Project and Flash Device). After flashing, you may need to press the **RESET** button on the board to start the firmware.*
+    *Note: The `idf.py` command requires the environment variables to be set. If using **VS Code**, you can simply use the ESP-IDF extension icons (Build Project and Flash Device). You may need to perform basic configuration in the extension first (Select Port, Set Device Target to `esp32s3`, and Select Flash Method). After flashing, you may need to press the **RESET** button on the board to start the firmware.*
 4.  **Dashboard**: 
-    - **Step 1**: Start the MQTT Broker. In a separate terminal (from the project root), run:
+    - **Step 1**: Start the MQTT Broker. In a separate terminal window, run:
       ```bash
       mosquitto -c mosquitto/mosquitto.conf -v
       ```
       **Keep this terminal window open.** *Note: If 'mosquitto' is not recognized, use the full path: `& "C:\Program Files\mosquitto\mosquitto.exe" -c mosquitto/mosquitto.conf -v` (on Windows). On Linux/macOS, ensure it is installed via your package manager (`apt` or `brew`).*
-    - **Step 2**: In your **main terminal** (or a new one), launch the dashboard:
+    - **Step 2**: In a new VS Code terminal tab, launch the dashboard:
       ```bash
-      # Windows (PowerShell)
+      # Windows
       .\frontend\index.html
 
       # macOS
@@ -197,41 +202,46 @@ O sistema é alimentado por uma fonte externa chaveada de +5V DC / 1A.
 
 #### 2. Configuração Rápida
 
-*Nota: A clonagem pode ser feita via Prompt de Comando, PowerShell ou diretamente pelo GitHub Desktop/Web.*
+*Nota: A clonagem pode ser feita via terminal ou diretamente pelo GitHub Web (Download ZIP).*
 
-1.  **Clonar**: Abra seu terminal, navegue até a pasta de seus projetos e execute:
+1.  **Clonar / Baixar**: 
+  - **Opção A (ZIP)**: Baixe e **extraia (descompacte)** o arquivo ZIP. Abra a pasta extraída no VS Code. *Nota: O GitHub cria uma pasta aninhada (ex: `Field-Station-ESP32-S3-main`). Certifique-se de abrir a pasta raiz que contém o diretório `main/`.*
+  - **Opção B (Git)**: Abra o **Visual Studio Code**, abra o terminal interno (Ctrl+Shift+`) e execute:
     ```bash
     cd /caminho/para/sua/pasta
     git clone https://github.com/morustree/Field-Station-ESP32-S3.git
     cd Field-Station-ESP32-S3
     ```
-2.  **Executar Setup**: Abra seu terminal (Prompt, PowerShell ou Bash) na raiz do projeto e execute o script apropriado para o seu sistema operacional:
+2.  **Executar Setup**: Execute o script apropriado para o seu sistema operacional no terminal do VS Code:
     ```bash
-    # Para Windows (PowerShell)
+    # Para Windows
     .\setup.ps1
+    # Caso o comando acima falhe por restrição de segurança, use:
+    powershell -ExecutionPolicy Bypass -File .\setup.ps1
 
-    # Para Linux / Mac (Bash)
+    # Para Linux / Mac
     chmod +x setup.sh && ./setup.sh
+    # Caso o comando acima falhe, tente:
+    bash setup.sh
     ```
-    *O script criará o arquivo `setup_config.ini` e o abrirá para edição. Preencha seus dados, salve e execute o script novamente para concluir.*
-3.  **Gravar**: 
-    - Abra a pasta do projeto clonado no **VS Code**.
+    *O script criará o arquivo `setup_config.ini` e o abrirá para edição. Preencha seus dados (mantenha as aspas ""), **salve e feche o arquivo** para concluir a configuração.*
+3.  **Compilar e Gravar**: 
     - Conecte seu **ESP32-S3** ao computador via USB.
     - Caso o dispositivo não seja reconhecido, coloque-o em **Modo de Gravação**: segure o botão **BOOT**, pressione **RESET** e solte o **BOOT**.
     - No terminal do ESP-IDF, execute:
     ```bash
     idf.py build flash
     ```
-    *Nota: O comando `idf.py` exige que as variáveis de ambiente estejam configuradas. Se estiver usando o **VS Code**, você pode simplesmente usar os ícones da extensão ESP-IDF (Build e Flash). Após o término da gravação, você deve pressionar o botão **RESET** físico na placa para iniciar o firmware.*
+    *Nota: O comando `idf.py` exige que as variáveis de ambiente estejam configuradas. Se estiver usando o **VS Code**, você pode simplesmente usar os ícones da extensão ESP-IDF (Build e Flash). Pode ser necessário realizar as configurações básicas na extensão antes (Selecionar Porta, Definir Target como `esp32s3` e Selecionar Método de Gravação). Após o término da gravação, você deve pressionar o botão **RESET** físico na placa para iniciar o firmware.*
 4.  **Dashboard**: 
-    - **Passo 1**: Inicie o Broker MQTT. Em um terminal à parte (na raiz do projeto), execute:
+    - **Passo 1**: Inicie o Broker MQTT. Em uma janela de terminal à parte, execute:
       ```bash
       mosquitto -c mosquitto/mosquitto.conf -v
       ```
       **Mantenha esta janela do terminal aberta.** *Nota: Caso 'mosquitto' não seja reconhecido, use o caminho completo: `& "C:\Program Files\mosquitto\mosquitto.exe" -c mosquitto/mosquitto.conf -v` (no Windows). No Linux/macOS, verifique se foi instalado via gerenciador de pacotes (`apt` ou `brew`).*
-    - **Passo 2**: No seu **terminal principal** (ou em um novo), abra o dashboard:
+    - **Passo 2**: Em uma nova aba de terminal do VS Code, abra o dashboard:
       ```bash
-      # Windows (PowerShell)
+      # Windows
       .\frontend\index.html
 
       # macOS

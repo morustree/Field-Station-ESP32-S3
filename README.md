@@ -8,6 +8,8 @@
 ### 📝 Overview
 Modular firmware developed in C (**ESP-IDF**) for the **ESP32-S3 DevKitC-1 N8R2**. The system performs environmental sensor readings, processes data in external memory buffers (PSRAM), and transmits via MQTT. In case of connectivity failure or time synchronization issues, data is persisted in a **LittleFS** partition on Flash.
 
+**Hardware Note**: The ESP32-S3 DevKitC-1 N8R2 was used as a prototype for testing and project validation. This board is excellent for accelerating development and prototyping. However, the ESP32-S3 DevKitC-1 N8R2 is not the cheapest model in the ESP32 line with Wi-Fi. Other models (such as the **ESP32-C3**) could be evaluated for production as they have a significantly lower purchase cost and higher energy efficiency. For deployment with other models, project modifications and pinout adjustments would be necessary.
+
 #### 🌐 Current Network Topology (Local)
 Currently, the project operates as a **Private IoT LAN**. It is designed to handle multiple field stations simultaneously:
 *   **Nodes (Field Stations)**: One or more ESP32-S3 devices performing One-Shot cycles.
@@ -33,6 +35,7 @@ Below are the main directories and files that make up the solution:
 
 - `main/`: Contains the main C source code.
   - `main.c`: One-Shot cycle control logic and task orchestration.
+  - `secrets.h`: Automatically generated configuration file (Wi-Fi/MQTT).
   - `*_sensor.c/h`: Modular drivers for BME280 / GY-BME280 and LDR 7mm.
   - `network.c/h` & `telemetry.c/h`: Wi-Fi/MQTT management and JSON data formatting.
   - `storage.c/h`: LittleFS persistence layer implementation.
@@ -40,6 +43,7 @@ Below are the main directories and files that make up the solution:
 - `sdkconfig.defaults`: Base hardware configuration (PSRAM, Flash, CPU).
 - `frontend/`: Web Application (Dashboard) for real-time monitoring.
   - `index.html`, `app.js`, `style.css`: Interface developed in Vanilla JS with MQTT integration.
+  - `config.js`: Automatically generated configuration file.
 - `mosquitto/`: Configurations for the Mosquitto MQTT Broker.
 - `setup.sh` / `setup.ps1`: Automated configuration scripts (Linux/Mac/Windows).
 - `setup_config.ini`: User configuration file (Wi-Fi, MQTT, and Deep Sleep interval).
@@ -71,6 +75,7 @@ The system is powered by an external switching power supply of +5V DC / 1A.
 *   **Specifications**: Input 100-240V AC | Output +5V DC 1A.
 *   **Physical Connection**: A USB-A cable was modified (cut end with exposed wires) to inject power directly into the breadboard. Although the project includes a **USB-A to USB-C** cable, it is used exclusively for flashing the firmware due to its short length. The modified cable allows for the reach of the external power source and centralized power distribution.
 *   **Power via UART**: The **UART** port of the ESP32-S3 DevKitC-1 accepts 5V power. However, in the final design, direct connection to the pins was chosen.
+*   **Battery and Protection**: A battery with integrated under-voltage protection (BMS) could be used. In this case, when the battery reaches the safe limit, the BMS cuts the power and the battery is not damaged. A voltage measurement circuit for the ESP32-S3 could be assembled, but this would increase energy consumption and the number of components.
 
 ---
 
@@ -158,9 +163,10 @@ If the automatic script fails:
 ### 🧠 Technologies and Resources Used
 
 - **ESP-IDF v5.x**: Professional framework for native C development.
-- **PSRAM (SPIRAM)**: Use of 2MB external RAM for JSON buffer allocation.
+- **PSRAM (SPIRAM)**: Use of 2MB external RAM for JSON buffer allocation. Using external RAM prevents fragmentation of the internal heap and allows handling larger payloads or backup queues without compromising the main application memory.
 - **LittleFS**: Power-failure resilient file system for local telemetry storage.
 - **One-Shot Architecture**: Linear life cycle (Wake up -> Measure -> Transmit -> Sleep). The interval can be customized in `setup_config.ini` (default: 5 min).
+  - *Radio Time & Connectivity*: The Wi-Fi connection timeout is hardcoded to 10 seconds (100 retries of 100ms) in `main/network.c` to prevent excessive battery drain if the signal is lost. For further optimization, implementing a Static IP (instead of DHCP) could save ~2 seconds of radio time.
   - *Safety Note*: The absolute technical minimum for ESP32-S3 deep sleep is on the order of milliseconds, but for application stability and power efficiency, at least 10 seconds is recommended.
 - **NTP/SNTP Sync**: Strict synchronization. The system validates real time before persisting or sending data to ensure chronology.
 - **Silent Production**: Firmware optimized for production.
@@ -170,6 +176,8 @@ If the automatic script fails:
 
 ### 📝 Visão Geral
 Firmware modular desenvolvido em C (**ESP-IDF**) para o **ESP32-S3 DevKitC-1 N8R2**. O sistema realiza a leitura de sensores ambientais, processa os dados em buffers de memória externa (PSRAM) e transmite via MQTT. Em caso de falha de conectividade ou sincronismo de tempo, os dados são persistidos em uma partição **LittleFS** na Flash.
+
+**Nota de Hardware**: O ESP32-S3 DevKitC-1 N8R2 foi usado como protótipo para testes e validação do projeto. Esta placa é excelente para acelerar a criação e prototipagem. No entanto, o ESP32-S3 DevKitC-1 N8R2 não é o modelo mais barato da linha ESP32 que possui Wi-Fi. Outros modelos (como o **ESP32-C3**) poderiam ser avaliados para produção por terem um custo de compra bem menor e maior eficiência energética. Para implementação com outros modelos, seriam necessárias modificações no projeto e ajustes de pinagem.
 
 #### 🌐 Topologia de Rede Atual (Local)
 Atualmente, o projeto opera como uma **LAN IoT Privada**. Ele foi projetado para gerenciar múltiplas estações de campo simultaneamente:
@@ -196,6 +204,7 @@ Abaixo, os principais diretórios e arquivos que compõem a solução:
 
 - `main/`: Contém o código-fonte principal em C.
   - `main.c`: Lógica de controle do ciclo One-Shot e orquestração de tarefas.
+  - `secrets.h`: Arquivo de configuração gerado automaticamente (Wi-Fi/MQTT).
   - `*_sensor.c/h`: Drivers modulares para BME280 / GY-BME280 e LDR 7mm.
   - `network.c/h` & `telemetry.c/h`: Gestão de Wi-Fi/MQTT e formatação de dados JSON.
   - `storage.c/h`: Implementação da camada de persistência LittleFS.
@@ -203,6 +212,7 @@ Abaixo, os principais diretórios e arquivos que compõem a solução:
 - `sdkconfig.defaults`: Configurações base de hardware (PSRAM, Flash, CPU).
 - `frontend/`: Aplicação Web (Dashboard) para monitoramento em tempo real.
   - `index.html`, `app.js`, `style.css`: Interface em Vanilla JS com integração MQTT.
+  - `config.js`: Arquivo de configuração gerado automaticamente.
 - `mosquitto/`: Configurações para o Broker MQTT Mosquitto.
 - `setup.sh` / `setup.ps1`: Scripts de configuração automática (Linux/Mac/Windows).
 - `setup_config.ini`: Arquivo de configurações do usuário (Wi-Fi, MQTT e intervalo de Deep Sleep).
@@ -234,6 +244,7 @@ O sistema é alimentado por uma fonte externa chaveada de +5V DC / 1A.
 *   **Especificações**: Input 100-240V AC | Output +5V DC 1A.
 *   **Conexão Física**: Um cabo USB-A foi modificado (extremidade cortada com fios expostos) para injetar a alimentação diretamente na protoboard. Embora o projeto conte com um cabo **USB-A para USB-C**, este é utilizado exclusivamente para gravação do firmware devido ao seu comprimento reduzido. O cabo modificado permite o alcance da fonte externa e a distribuição centralizada de energia.
 *   **Alimentação via UART**: A porta **UART** do ESP32-S3 DevKitC-1 aceita alimentação de 5V. No entanto, no design final, optou-se pela conexão direta nos pinos.
+*   **Bateria e Proteção**: Uma bateria com proteção integrada contra subtensão (BMS) poderia ser usada. Nesse caso, quando a bateria atinge o limite seguro, o BMS corta a energia e a bateria não é danificada. Um circuito para medição de tensão pelo ESP32-S3 poderia ser montado, mas isso aumentaria o consumo de energia e o número de componentes.
 
 ---
 
@@ -320,9 +331,10 @@ Caso o script automático falhe:
 ### 🧠 Tecnologias e Recursos Utilizados
 
 - **ESP-IDF v5.x**: Framework profissional para desenvolvimento nativo em C.
-- **PSRAM (SPIRAM)**: Uso de 2MB de RAM externa para alocação de buffers JSON.
+- **PSRAM (SPIRAM)**: Uso de 2MB de RAM externa para alocação de buffers JSON. O uso da RAM externa evita a fragmentação do heap interno e permite manipular payloads maiores ou filas de backup sem comprometer a memória principal da aplicação.
 - **LittleFS**: Sistema de arquivos resiliente a falhas de energia para armazenamento local de telemetria.
 - **One-Shot Architecture**: Ciclo de vida linear (Acordar -> Medir -> Transmitir -> Dormir). O intervalo pode ser personalizado no arquivo `setup_config.ini` (padrão: 5 min).
+  - *Tempo de Rádio e Conectividade*: O timeout da conexão Wi-Fi está codificado para 10 segundos (100 tentativas de 100ms) em `main/network.c` para evitar drenagem excessiva da bateria caso o sinal falhe. Para otimização futura, a implementação de IP Estático (em vez de DHCP) pode economizar ~2 segundos de tempo de rádio.
   - *Nota de Segurança*: O mínimo técnico para o deep sleep do ESP32-S3 é da ordem de milissegundos, mas para estabilidade da aplicação e eficiência energética, recomenda-se pelo menos 10 segundos.
 - **NTP/SNTP Sync**: Sincronização estrita. O sistema valida o tempo real antes de persistir ou enviar dados para garantir a cronologia.
 - **Produção Silenciosa**: Firmware otimizado para produção.

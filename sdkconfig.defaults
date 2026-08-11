@@ -25,9 +25,9 @@ CONFIG_SPIRAM_MEMTEST=y
 # CPU Frequency
 CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_160=y
 
-# Logging Level (Default Info, can be changed to NONE for absolute silence)
-CONFIG_LOG_DEFAULT_LEVEL_INFO=y
-CONFIG_LOG_DEFAULT_LEVEL=3
+# Logging Level (NONE for absolute silence)
+CONFIG_LOG_DEFAULT_LEVEL_NONE=y
+CONFIG_LOG_DEFAULT_LEVEL=0
 
 # LittleFS Component Settings
 CONFIG_LITTLEFS_OBJ_NAME_LEN=64

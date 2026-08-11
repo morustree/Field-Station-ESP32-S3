@@ -24,28 +24,23 @@ jobs:
       - name: Baixar o Build Wrapper do SonarCloud
         run: |
           mkdir -p $HOME/.sonar
-          curl -sSLo $HOME/.sonar/build-wrapper-linux-x86.zip https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
+          curl -sSLo $HOME/.sonar/build-wrapper-linux-x86.zip https://sonarcloud.io
           unzip -o $HOME/.sonar/build-wrapper-linux-x86.zip -d $HOME/.sonar/
           echo "$HOME/.sonar/build-wrapper-linux-x86" >> $GITHUB_PATH
 
-      - name: Instalar o Sonar-Scanner
-        uses: SonarSource/sonarcloud-github-action@v2
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
       - name: Compilar o projeto dentro do Build Wrapper
         run: |
-          # Ativa o ambiente do ESP-IDF na máquina virtual
+          # Garante que as variáveis do ESP-IDF estão ativas e compila vigiado pelo Sonar
           . $IDF_PATH/export.sh
-          # Executa a compilação do ESP-IDF envolvida pelo analisador do Sonar
           build-wrapper-linux-x86-64 --out-dir build_wrapper_output_directory idf.py build
 
-      - name: Enviar Análise para o SonarCloud
-        run: |
-          sonar-scanner \
-            -Dsonar.organization=morustree \
-            -Dsonar.projectKey=morustree_Field-Station-ESP32-S3 \
-            -Dsonar.sources=main \
+      - name: Executar análise do SonarCloud
+        uses: SonarSource/sonarqube-scan-action@v5
+        with:
+          args: >
+            -Dsonar.organization=morustree
+            -Dsonar.projectKey=morustree_Field-Station-ESP32-S3
+            -Dsonar.sources=main
             -Dsonar.cfamily.compile-commands=build_wrapper_output_directory/compile_commands.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -26,7 +26,8 @@ jobs:
           mkdir -p $HOME/.sonar
           curl -sSLo $HOME/.sonar/build-wrapper-linux-x86.zip https://sonarcloud.io
           unzip -o $HOME/.sonar/build-wrapper-linux-x86.zip -d $HOME/.sonar/
-          echo "$HOME/.sonar/build-wrapper-linux-x86" >> $GITHUB_PATH
+          # Injeta o caminho correto no PATH do GitHub Actions
+          echo "$HOME/.sonar/build-wrapper-linux-x86-64" >> $GITHUB_PATH
 
       - name: Compilar o projeto dentro do Build Wrapper
         run: |

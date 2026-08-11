@@ -188,9 +188,9 @@ function Launch-Services {
         Start-Process -FilePath $global:MOSQUITTO_CMD -ArgumentList $mosqArgs -WindowStyle Normal
     }
 
-    $ans = Read-Host "Open Web Dashboard? (y/n)"
+    $ans = Read-Host "Open Telemetry Monitor? (y/n)"
     if ($ans -eq 'y') {
-        Write-Host "Opening Dashboard in your browser..." -ForegroundColor Cyan
+        Write-Host "Opening Monitor in your browser..." -ForegroundColor Cyan
         Start-Process "frontend/index.html"
     }
 }

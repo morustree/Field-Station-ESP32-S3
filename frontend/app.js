@@ -1,5 +1,5 @@
 /**
- * ESP32-S3 Field Station Dashboard
+ * ESP32-S3 Field Station Telemetry Monitor
  * Multi-language support and Theme Toggling using Lucide and Flag-Icons.
  */
 

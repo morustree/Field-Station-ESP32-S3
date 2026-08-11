@@ -173,9 +173,9 @@ launch_services() {
         mosquitto -c mosquitto/mosquitto.conf -v &
     fi
 
-    read -p "Open Web Dashboard? (y/n): " ANS
+    read -p "Open Telemetry Monitor? (y/n): " ANS
     if [ "$ANS" == "y" ]; then
-        echo -e "Opening Dashboard in your browser...${NC}"
+        echo -e "Opening Monitor in your browser...${NC}"
         if command -v open > /dev/null; then open frontend/index.html
         elif command -v xdg-open > /dev/null; then xdg-open frontend/index.html
         else echo "Please open frontend/index.html manually."; fi

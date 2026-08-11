@@ -13,7 +13,7 @@ Modular firmware developed in C (**ESP-IDF**) for the **ESP32-S3 DevKitC-1 N8R2*
 #### 🌐 Current Network Topology (Local)
 Currently, the project operates as a **Private IoT LAN**. It is designed to handle multiple field stations simultaneously:
 *   **Nodes (Field Stations)**: One or more ESP32-S3 devices performing One-Shot cycles.
-*   **Hub (Broker/Dashboard)**: A computer or server running **Mosquitto** and hosting the frontend.
+*   **Hub (Broker/Monitor)**: A computer or server running **Mosquitto** and hosting the frontend.
 *   **Connectivity**: Communication happens over 2.4GHz Wi-Fi (hardware limitation of the ESP32-S3). All devices must be on the same subnet (sharing the same IP range). 
 *   **Constraint Note**: Local traffic must be direct; use of VPNs on the computer might mask the local IP and prevent stations from connecting.
 
@@ -25,7 +25,7 @@ Furthermore, this architecture is optimized for **scalability**. While a single 
 The system is ready to scale beyond the local network. By migrating the Broker to the **Cloud** (e.g., HiveMQ, EMQX, or AWS IoT):
 *   **Global Access**: Monitor your field stations from any internet-connected device (4G/5G).
 *   **Independence**: No need to keep a local PC powered on 24/7.
-*   **Centralization**: Multiple stations in different geographical locations can send data to a single unified dashboard.
+*   **Centralization**: Multiple stations in different geographical locations can send data to a single unified telemetry monitor.
 
 ---
 
@@ -41,7 +41,7 @@ Below are the main directories and files that make up the solution:
   - `storage.c/h`: LittleFS persistence layer implementation.
 - `partitions.csv`: Custom flash partition table.
 - `sdkconfig.defaults`: Base hardware configuration (PSRAM, Flash, CPU).
-- `frontend/`: Web Application (Dashboard) for real-time monitoring.
+- `frontend/`: Web Application (**Telemetry Monitor**) for real-time monitoring.
   - `index.html`, `app.js`, `style.css`: Interface developed in Vanilla JS with MQTT integration.
   - `config.js`: Automatically generated configuration file.
 - `mosquitto/`: Configurations for the Mosquitto MQTT Broker.
@@ -109,7 +109,7 @@ This guide uses an **Interactive CLI** that automates configuration, build, flas
     - Validate your Wi-Fi and MQTT settings.
     - Generate necessary code files.
     - Ask if you want to **Build & Flash**. Ensure ESP32-S3 is connected via USB. You might need to put it into Download Mode: hold down the BOOT button on the board, quickly press RESET, and then release BOOT. After flashing, you may need to press the RESET button to start the firmware.
-    - Ask if you want to launch the **Broker and Dashboard**.
+    - Ask if you want to launch the **Broker and Telemetry Monitor**.
     *Note: The MQTT Broker must remain running in the background for the system to function. Closing its terminal window will stop data reception.*
 
 <details>
@@ -141,8 +141,8 @@ If the automatic script fails:
     mosquitto -c mosquitto/mosquitto.conf -v
     ```
     **Keep this terminal window open.** *Note: If 'mosquitto' is not recognized, use the full path: `& "C:\Program Files\mosquitto\mosquitto.exe" -c mosquitto/mosquitto.conf -v` (on Windows). On Linux/macOS, ensure it is installed via your package manager (`apt` or `brew`).*
-5.  **Open Dashboard**:
-    - In a new VS Code terminal tab, launch the dashboard:
+5.  **Open Telemetry Monitor**:
+    - In a new VS Code terminal tab, launch the monitor:
     ```bash
     # Windows
     .\frontend\index.html
@@ -153,10 +153,10 @@ If the automatic script fails:
     # Linux
     xdg-open frontend/index.html
     ```
-  *Note: The broker must be running for the dashboard to receive data. Closing the terminal stops the broker.*
+  *Note: The broker must be running for the telemetry monitor to receive data. Closing the terminal stops the broker.*
 </details>
 
-![Viewer](./dashboard.png)
+![Viewer](./monitor.png)
 
 ---
 
@@ -182,7 +182,7 @@ Firmware modular desenvolvido em C (**ESP-IDF**) para o **ESP32-S3 DevKitC-1 N8R
 #### 🌐 Topologia de Rede Atual (Local)
 Atualmente, o projeto opera como uma **LAN IoT Privada**. Ele foi projetado para gerenciar múltiplas estações de campo simultaneamente:
 *   **Nós (Estações)**: Um ou mais dispositivos ESP32-S3 realizando ciclos One-Shot.
-*   **Hub (Broker/Dashboard)**: Um computador ou servidor executando o **Mosquitto** e servindo o frontend.
+*   **Hub (Broker/Monitor)**: Um computador ou servidor executando o **Mosquitto** e servindo o frontend.
 *   **Conectividade**: A comunicação ocorre via Wi-Fi 2.4GHz (limitação de hardware do ESP32-S3). Todos os dispositivos devem estar na mesma sub-rede (mesmo range de IP).
 *   **Nota de Restrição**: O tráfego local deve ser direto; o uso de VPNs no computador pode mascarar o IP local e impedir que as estações se conectem.
 
@@ -194,7 +194,7 @@ Além disso, essa arquitetura é otimizada para **escalabilidade**. Embora um ú
 O sistema está pronto para escalar além da rede local. Ao migrar o Broker para a **Nuvem** (ex: HiveMQ, EMQX ou AWS IoT):
 *   **Acesso Global**: Monitore suas estações de campo de qualquer dispositivo com internet (4G/5G).
 *   **Independência**: Elimina a necessidade de manter um PC local ligado 24/7.
-*   **Centralização**: Estações em diferentes localizações geográficas podem reportar para um único dashboard unificado.
+*   **Centralização**: Estações em diferentes localizações geográficas podem reportar para um único monitor de telemetria unificado.
 
 ---
 
@@ -210,7 +210,7 @@ Abaixo, os principais diretórios e arquivos que compõem a solução:
   - `storage.c/h`: Implementação da camada de persistência LittleFS.
 - `partitions.csv`: Tabela de partições customizada.
 - `sdkconfig.defaults`: Configurações base de hardware (PSRAM, Flash, CPU).
-- `frontend/`: Aplicação Web (Dashboard) para monitoramento em tempo real.
+- `frontend/`: Aplicação Web (**Monitor de Telemetria**) para monitoramento em tempo real.
   - `index.html`, `app.js`, `style.css`: Interface em Vanilla JS com integração MQTT.
   - `config.js`: Arquivo de configuração gerado automaticamente.
 - `mosquitto/`: Configurações para o Broker MQTT Mosquitto.
@@ -277,7 +277,7 @@ Este guia utiliza uma **CLI Interativa** que automatiza a configuração, compil
     - Validar suas configurações de Wi-Fi e MQTT.
     - Gerar os arquivos de código necessários.
     - Perguntar se deseja **Compilar e Gravar**. Certifique-se de que o ESP32-S3 está conectado via USB. Pode ser necessário colocá-lo em Modo de Gravação manualmente: mantenha o botão BOOT pressionado, pressione rapidamente o RESET e então solte o BOOT. Após a gravação, pode ser necessário pressionar o RESET para iniciar o firmware.
-    - Perguntar se deseja iniciar o **Broker e o Dashboard**.
+    - Perguntar se deseja iniciar o **Broker e o Monitor de Telemetria**.
     *Nota: O Broker MQTT deve permanecer em execução em segundo plano para que o sistema funcione. Fechar a janela do terminal do broker interromperá a recepção de dados.*
 
 <details>
@@ -309,7 +309,7 @@ Caso o script automático falhe:
     mosquitto -c mosquitto/mosquitto.conf -v
     ```
     **Mantenha essa janela aberta.** *Nota: Se 'mosquitto' não for reconhecido, use o caminho completo `& "C:\Program Files\mosquitto\mosquitto.exe" -c mosquitto/mosquitto.conf -v` (Windows). No Linux/macOS, certifique-se de instalá-lo pelo gerenciador de pacotes (`apt` or `brew`).*
-5.  **Abrir Dashboard**:
+5.  **Abrir Monitor de Telemetria**:
     - Em uma nova janela de terminal, execute:
     ```bash
     # Windows
@@ -321,10 +321,10 @@ Caso o script automático falhe:
     # Linux
     xdg-open frontend/index.html
     ```
-    *Nota: o Broker deve estar em execução para que o dashboard receba dados. Fechar a janela do terminal do Broker interrompe a recepção.
+    *Nota: o Broker deve estar em execução para que o monitor de telemetria receba dados. Fechar a janela do terminal do Broker interrompe a recepção.
 </details>
 
-![Viewer](./dashboard_pt.png)
+![Viewer](./monitor_pt.png)
 
 ---
 

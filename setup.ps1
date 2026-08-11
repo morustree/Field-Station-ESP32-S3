@@ -1,101 +1,208 @@
-# Automatic Setup Script for ESP32-S3 Field Station
+# ESP32-S3 Field Station - Interactive Master Setup (Windows)
+$ErrorActionPreference = "Stop"
 
 function Write-Header {
-    Write-Host "`n===============================================" -ForegroundColor Cyan
-    Write-Host "   ESP32-S3 Field Station - Auto Setup" -ForegroundColor Cyan
-    Write-Host "===============================================`n" -ForegroundColor Cyan
+    Clear-Host
+    Write-Host "===============================================" -ForegroundColor Cyan
+    Write-Host "   ESP32-S3 FIELD STATION - MASTER SETUP" -ForegroundColor Cyan
+    Write-Host "===============================================" -ForegroundColor Cyan
+    Write-Host " Press Ctrl+C to cancel at any time." -ForegroundColor Gray
+    Write-Host " Windows & Linux: press Ctrl+Shift+C to copy and Ctrl+Shift+V to paste." -ForegroundColor Gray
+    Write-Host " macOS: press Cmd+C to copy and Cmd+V to paste." -ForegroundColor Gray
 }
 
-Write-Header
+function Check-Prerequisites {
+    Write-Host "`n[1/5] Checking Prerequisites..." -ForegroundColor Yellow
 
-if (Test-Path "setup_config.ini") {
-    Write-Host "Configuration file 'setup_config.ini' found." -ForegroundColor Cyan
-    Write-Host "1. Edit current file"
-    Write-Host "2. Reset to defaults (Deletes current file!)"
-    Write-Host "3. Continue with current settings"
-    $choice = Read-Host "`nSelect an option (1-3)"
-
-    if ($choice -eq '1') {
-        Start-Process notepad "setup_config.ini" -Wait
-        Write-Host "Applying new settings..." -ForegroundColor Yellow
-    } elseif ($choice -eq '2') {
-        Remove-Item "setup_config.ini"
-        Write-Host "File removed. Restarting setup..." -ForegroundColor Yellow
-        Copy-Item "setup_config.ini.example" "setup_config.ini"
-        Start-Process notepad "setup_config.ini" -Wait
-        Write-Host "Applying new settings..." -ForegroundColor Yellow
+    # Check ESP-IDF
+    $idfPath = Get-Command idf.py -ErrorAction SilentlyContinue
+    if (-not $idfPath) {
+        Write-Host "ERROR: 'idf.py' not found!" -ForegroundColor Red
+        Write-Host "Please run this script from the 'ESP-IDF Terminal' in VS Code." -ForegroundColor Yellow
+        exit 1
     }
-} else {
-    Write-Host "Configuration file not found. Creating 'setup_config.ini' for you..." -ForegroundColor Yellow
-    Copy-Item "setup_config.ini.example" "setup_config.ini"
-    Write-Host "Opening file for editing. Fill in your details and save it." -ForegroundColor Cyan
-    Start-Process notepad "setup_config.ini" -Wait
-    Write-Host "Applying settings..." -ForegroundColor Yellow
+    Write-Host "  [OK] ESP-IDF detected." -ForegroundColor Green
+
+    # Check Mosquitto
+    $mosqCmd = Get-Command mosquitto -ErrorAction SilentlyContinue
+    $mosquittoPaths = @()
+    if ($mosqCmd) { $mosquittoPaths += $mosqCmd.Source }
+    $mosquittoPaths += "C:\Program Files\mosquitto\mosquitto.exe"
+    $mosquittoPaths += "C:\Program Files (x86)\mosquitto\mosquitto.exe"
+
+    $global:MOSQUITTO_CMD = $null
+    foreach ($path in $mosquittoPaths) {
+        if ($path -and (Test-Path $path)) { $global:MOSQUITTO_CMD = $path; break }
+    }
+
+    if (-not $global:MOSQUITTO_CMD) {
+        Write-Host "ERROR: Mosquitto MQTT Broker not found!" -ForegroundColor Red
+        Write-Host "Please install Mosquitto and add it to your PATH." -ForegroundColor Yellow
+        exit 1
+    }
+    Write-Host "  [OK] Mosquitto detected at: $global:MOSQUITTO_CMD" -ForegroundColor Green
 }
 
-Write-Host "Reading settings from setup_config.ini..." -ForegroundColor Yellow
+function Get-ConfigInput {
+    Write-Host "`n[2/5] Configuration (Interactive CLI)" -ForegroundColor Yellow
+    Write-Host "Tip: Press ENTER to keep the current value shown in [brackets]." -ForegroundColor Gray
 
-$content = Get-Content "setup_config.ini" -Raw
+    # Load defaults if exists
+    $defSsid = "Your_WiFi_SSID"
+    $defPass = ""
+    $defIp = "192.168.1.100"
+    $defDev = "esp32s3_field_01"
+    $defSleep = "5"
 
-# Robust extraction using Regex
-$ssid = if ($content -match "ssid\s*=\s*`"([^`"]+)`"") { $Matches[1] } else { $null }
-$pass = if ($content -match "password\s*=\s*`"([^`"]+)`"") { $Matches[1] } else { "" }
-$ip   = if ($content -match "broker_ip\s*=\s*`"([^`"]+)`"") { $Matches[1] } else { $null }
-$devId = if ($content -match "device_id\s*=\s*`"([^`"]+)`"") { $Matches[1] } else { "esp32s3_default" }
-$sleepMin = if ($content -match "deep_sleep_minutes\s*=\s*([0-9.]+)") { $Matches[1] } else { "5" }
+    if (Test-Path "setup_config.ini") {
+        $content = Get-Content "setup_config.ini" -Raw
+        if ($content -match "ssid\s*=\s*`"([^`"]+)`"") { $defSsid = $Matches[1] }
+        if ($content -match "password\s*=\s*`"([^`"]*)`"") { $defPass = $Matches[1] }
+        if ($content -match "broker_ip\s*=\s*`"([^`"]+)`"") { $defIp = $Matches[1] }
+        if ($content -match "device_id\s*=\s*`"([^`"]+)`"") { $defDev = $Matches[1] }
+        if ($content -match "deep_sleep_minutes\s*=\s*([0-9.]+)") { $defSleep = $Matches[1] }
+    }
 
-# Show detected values for confirmation
-Write-Host "Detected Settings:" -ForegroundColor Gray
-Write-Host "  SSID:      $ssid"
-Write-Host "  Broker IP: $ip"
-Write-Host "  Device ID: $devId"
-Write-Host "  Sleep Min: $sleepMin"
+    while ($true) {
+        $ssid = Read-Host "Enter Wi-Fi SSID [$defSsid]"
+        if ([string]::IsNullOrWhiteSpace($ssid)) { $ssid = $defSsid }
 
-if ([string]::IsNullOrWhiteSpace($ssid) -or [string]::IsNullOrWhiteSpace($ip)) {
-    Write-Host "`nERROR: SSID or Broker IP could not be parsed from setup_config.ini!" -ForegroundColor Red
-    Write-Host "Ensure they are filled correctly between double quotes." -ForegroundColor Yellow
-    exit 1
+        $pass = Read-Host "Enter Wi-Fi Password (leave empty for none) [$defPass]"
+        if ([string]::IsNullOrWhiteSpace($pass) -and $defPass -ne "") { $pass = $defPass }
+
+        $ip = Read-Host "Enter Broker IP (your computer's IP) [$defIp]"
+        if ([string]::IsNullOrWhiteSpace($ip)) { $ip = $defIp }
+
+        $devId = Read-Host "Enter Device ID [$defDev]"
+        if ([string]::IsNullOrWhiteSpace($devId)) { $devId = $defDev }
+
+        $sleep = Read-Host "Deep Sleep Interval (minutes) [$defSleep]"
+        if ([string]::IsNullOrWhiteSpace($sleep)) { $sleep = $defSleep }
+
+        Write-Host "`nValidating connection to Broker IP: $ip..." -ForegroundColor Cyan
+        $ping = Test-Connection -ComputerName $ip -Count 1 -Quiet
+        if ($ping) {
+            Write-Host "  [OK] Broker IP is reachable." -ForegroundColor Green
+
+            # Check if MQTT port is open
+            $tcpTest = Test-NetConnection -ComputerName $ip -Port 1883 -InformationLevel Quiet
+            if ($tcpTest) {
+                Write-Host "  [OK] MQTT Broker is active on port 1883." -ForegroundColor Green
+            } else {
+                Write-Host "  [WARNING] No MQTT Broker detected on $ip`:1883. Ensure it is running before the station starts." -ForegroundColor Yellow
+            }
+
+            $global:CONFIG = @{ ssid=$ssid; pass=$pass; ip=$ip; dev=$devId; sleep=$sleep }
+            break
+        } else {
+            Write-Host "  [WARNING] Could not ping $ip. Check if the IP is correct." -ForegroundColor Yellow
+            $choice = Read-Host "Continue anyway? (y/n)"
+            if ($choice -eq 'y') {
+                $global:CONFIG = @{ ssid=$ssid; pass=$pass; ip=$ip; dev=$devId; sleep=$sleep }
+                break
+            }
+        }
+    }
 }
 
-# 1. Generate main/secrets.h
-Write-Host "`nGenerating main/secrets.h..." -ForegroundColor Green
-# Using ${var} to avoid ambiguity with ":" in the URI string
-$secretsContent = @"
+function Save-Configs {
+    Write-Host "`n[3/5] Generating configuration files..." -ForegroundColor Yellow
+
+    $c = $global:CONFIG
+
+    # 1. setup_config.ini
+    $iniContent = @"
+; Field Station Configuration
+ssid = "$($c.ssid)"
+password = "$($c.pass)"
+broker_ip = "$($c.ip)"
+device_id = "$($c.dev)"
+deep_sleep_minutes = $($c.sleep)
+"@
+    $iniContent | Out-File -FilePath "setup_config.ini" -Encoding UTF8
+
+    # 2. main/secrets.h
+    $secretsContent = @"
 #ifndef SECRETS_H
 #define SECRETS_H
 
 // Automatically generated via setup.ps1
-#define WIFI_STA_SSID      "$ssid"
-#define WIFI_STA_PASSWORD  "$pass"
-#define MQTT_BROKER_URI    "mqtt://${ip}:1883"
+#define WIFI_STA_SSID      "$($c.ssid)"
+#define WIFI_STA_PASSWORD  "$($c.pass)"
+#define MQTT_BROKER_URI    "mqtt://$($c.ip):1883"
 #define MQTT_USERNAME      NULL
 #define MQTT_PASSWORD      NULL
 
-#define DEVICE_ID          "$devId"
-#define MQTT_TOPIC         "sensores/${devId}/dados"
+#define DEVICE_ID          "$($c.dev)"
+#define MQTT_TOPIC         "sensores/$($c.dev)/dados"
 
-#define DEEP_SLEEP_MINUTES $sleepMin
+#define DEEP_SLEEP_MINUTES $($c.sleep)
 
 #endif
 "@
-$secretsContent | Out-File -FilePath "main/secrets.h" -Encoding UTF8
+    $secretsContent | Out-File -FilePath "main/secrets.h" -Encoding UTF8
 
-# 2. Generate frontend/config.js
-Write-Host "Generating frontend/config.js..." -ForegroundColor Green
-$jsConfig = @"
+    # 3. frontend/config.js
+    $jsConfig = @"
 // Automatically generated via setup.ps1
 const AUTO_CONFIG = {
-    host: "$ip",
+    host: "$($c.ip)",
     port: 9001,
     topic: "sensores/+/dados"
 };
 "@
-$jsConfig | Out-File -FilePath "frontend/config.js" -Encoding UTF8
+    $jsConfig | Out-File -FilePath "frontend/config.js" -Encoding UTF8
 
-# 3. Final steps
-Write-Host "`nConfiguration files generated." -ForegroundColor Yellow
+    Write-Host "  [OK] All configuration files updated." -ForegroundColor Green
+}
 
-Write-Host "`nSetup completed successfully!" -ForegroundColor Cyan
-Write-Host "Next steps:" -ForegroundColor White
-Write-Host "1. Re-compile and Flash: idf.py build flash" -ForegroundColor White
-Write-Host "2. Launch Dashboard:     .\frontend\index.html`n" -ForegroundColor White
+function Invoke-BuildFlash {
+    Write-Host "`n[4/5] Build & Flash Process" -ForegroundColor Yellow
+    $ans = Read-Host "Do you want to compile and flash to ESP32-S3 now? (y/n)"
+    if ($ans -ne 'y') { return }
+
+    Write-Host "`nIMPORTANT: Ensure your ESP32-S3 is connected via USB." -ForegroundColor Cyan
+    Write-Host "You might need to put it into Download Mode:" -ForegroundColor White
+    Write-Host "  1. Hold BOOT button`n  2. Press RESET`n  3. Release BOOT" -ForegroundColor White
+
+    try {
+        Write-Host "`nExecuting: idf.py build flash..." -ForegroundColor Gray
+        & idf.py build flash
+        Write-Host "`n[OK] Firmware successfully flashed!" -ForegroundColor Green
+    } catch {
+        Write-Host "`n[ERROR] Build or Flash failed. Check the logs above." -ForegroundColor Red
+    }
+}
+
+function Launch-Services {
+    Write-Host "`n[5/5] Launch Services" -ForegroundColor Yellow
+
+    # Check if MQTT is already running
+    $portActive = Get-NetTCPConnection -LocalPort 1883 -ErrorAction SilentlyContinue
+
+    if ($portActive) {
+        Write-Host "  [INFO] A service is already listening on port 1883 (Mosquitto Service?)." -ForegroundColor Green
+    } else {
+        Write-Host "Starting Mosquitto MQTT Broker..." -ForegroundColor Cyan
+        $mosqArgs = "-c mosquitto/mosquitto.conf -v"
+        Start-Process -FilePath $global:MOSQUITTO_CMD -ArgumentList $mosqArgs -WindowStyle Normal
+    }
+
+    $ans = Read-Host "Open Web Dashboard? (y/n)"
+    if ($ans -eq 'y') {
+        Write-Host "Opening Dashboard in your browser..." -ForegroundColor Cyan
+        Start-Process "frontend/index.html"
+    }
+}
+
+# Execution
+Write-Header
+Check-Prerequisites
+Get-ConfigInput
+Save-Configs
+Invoke-BuildFlash
+Launch-Services
+
+Write-Host "`n===============================================" -ForegroundColor Cyan
+Write-Host "          SETUP PROCESS COMPLETED!" -ForegroundColor Cyan
+Write-Host "===============================================`n" -ForegroundColor Cyan

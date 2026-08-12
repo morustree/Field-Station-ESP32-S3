@@ -10,7 +10,11 @@
 ### 📝 Overview
 Modular firmware developed in C (**ESP-IDF**) for the **ESP32-S3 DevKitC-1 N8R2**. The system performs environmental sensor readings, processes data in external memory buffers (PSRAM), and transmits via MQTT. In case of connectivity failure or time synchronization issues, data is persisted in a **LittleFS** partition on Flash.
 
-**Hardware Note**: The ESP32-S3 DevKitC-1 N8R2 was used as a prototype for testing and project validation. This board is excellent for accelerating development and prototyping. However, the ESP32-S3 DevKitC-1 N8R2 is not the cheapest model in the ESP32 line with Wi-Fi. Other models (such as the **ESP32-C3**) could be evaluated for production as they have a significantly lower purchase cost and higher energy efficiency. For deployment with other models, project modifications and pinout adjustments would be necessary.
+ESP32-S3 was used as a prototype for testing and project validation. This board is excellent for accelerating development and prototyping. However, the ESP32-S3 DevKitC-1 N8R2 is not the cheapest model in the ESP32 line with Wi-Fi. Other models (such as the **ESP32-C3**) could be evaluated for production as they have a significantly lower purchase cost and higher energy efficiency. For deployment with other models, project modifications and pinout adjustments would be necessary.
+
+### 🔗 Integration with Virtcon Platform
+This project is integrated with the **Virtcon** Platform, an independent system used for data visualization and **anomaly detection**. Virtcon identifies abrupt deviations from normal environmental patterns, adding a layer of intelligent monitoring to the Field Station's telemetry. While Virtcon is in its early development stage, the ESP32-S3 Field Station project is fully operational.
+For more details, see [VIRTCON_OVERVIEW](./VIRTCON_OVERVIEW.md).
 
 #### 🌐 Current Network Topology (Local)
 Currently, the project operates as a **Private IoT LAN**. It is designed to handle multiple field stations simultaneously:
@@ -56,7 +60,7 @@ Below are the main directories and files that make up the solution:
 
 The system is powered by an external switching power supply of +5V DC / 1A.
 
-![Circuit Diagram](./ckt_img.png)
+![Circuit Diagram](./images/ckt_img.png)
 
 #### 🔌 Connection Details (Pinout)
 
@@ -158,7 +162,7 @@ If the automatic script fails:
   *Note: The broker must be running for the telemetry monitor to receive data. Closing the terminal stops the broker.*
 </details>
 
-![Viewer](./monitor.png)
+![Viewer](./images/monitor.png)
 
 ---
 
@@ -179,7 +183,11 @@ If the automatic script fails:
 ### 📝 Visão Geral
 Firmware modular desenvolvido em C (**ESP-IDF**) para o **ESP32-S3 DevKitC-1 N8R2**. O sistema realiza a leitura de sensores ambientais, processa os dados em buffers de memória externa (PSRAM) e transmite via MQTT. Em caso de falha de conectividade ou sincronismo de tempo, os dados são persistidos em uma partição **LittleFS** na Flash.
 
-**Nota de Hardware**: O ESP32-S3 DevKitC-1 N8R2 foi usado como protótipo para testes e validação do projeto. Esta placa é excelente para acelerar a criação e prototipagem. No entanto, o ESP32-S3 DevKitC-1 N8R2 não é o modelo mais barato da linha ESP32 que possui Wi-Fi. Outros modelos (como o **ESP32-C3**) poderiam ser avaliados para produção por terem um custo de compra bem menor e maior eficiência energética. Para implementação com outros modelos, seriam necessárias modificações no projeto e ajustes de pinagem.
+O ESP32-S3 foi usado como protótipo para testes e validação do projeto. Esta placa é excelente para acelerar a criação e prototipagem. No entanto, o ESP32-S3 DevKitC-1 N8R2 não é o modelo mais barato da linha ESP32 que possui Wi-Fi. Outros modelos (como o **ESP32-C3**) poderiam ser avaliados para produção por terem um custo de compra bem menor e maior eficiência energética. Para implementação com outros modelos, seriam necessárias modificações no projeto e ajustes de pinagem.
+
+### 🔗 Integração com a Plataforma Virtcon
+Este projeto possui integração com a Plataforma **Virtcon**, um sistema independente utilizado para visualização de dados e **detecção de anomalias**. O Virtcon identifica desvios abruptos nos padrões climáticos normais, adicionando uma camada de monitoramento inteligente à telemetria da Field Station. Enquanto o Virtcon está em fase inicial de desenvolvimento, o projeto ESP32-S3 Field Station já está totalmente operacional.
+Para mais detalhes, consulte o arquivo [VIRTCON_OVERVIEW](./VIRTCON_OVERVIEW.md).
 
 #### 🌐 Topologia de Rede Atual (Local)
 Atualmente, o projeto opera como uma **LAN IoT Privada**. Ele foi projetado para gerenciar múltiplas estações de campo simultaneamente:
@@ -225,7 +233,7 @@ Abaixo, os principais diretórios e arquivos que compõem a solução:
 
 O sistema é alimentado por uma fonte externa chaveada de +5V DC / 1A.
 
-![Circuit Diagram](./ckt_img.png)
+![Circuit Diagram](./images/ckt_img.png)
 
 #### 🔌 Detalhamento de Conexões (Pinagem)
 
@@ -326,7 +334,7 @@ Caso o script automático falhe:
     *Nota: o Broker deve estar em execução para que o monitor de telemetria receba dados. Fechar a janela do terminal do Broker interrompe a recepção.
 </details>
 
-![Viewer](./monitor_pt.png)
+![Viewer](./images/monitor_pt.png)
 
 ---
 

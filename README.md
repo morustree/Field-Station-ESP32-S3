@@ -1,6 +1,6 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21894931.svg)](https://doi.org/10.5281/zenodo.21894931)
 
-# IoT Field Station (ESP32-S3)
+# IoT Field Station (ESP32-S3): Environmental Sensor Readings (Temperature, Pressure, Humidity, and Luminosity)
 
 [English (US)](#english) | [Português (BR)](#português)
 

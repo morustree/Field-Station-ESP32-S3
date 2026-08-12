@@ -1,3 +1,93 @@
+# Virtcon: Monitoring and Anomaly Detection Platform
+
+[English (US)](#english) | [Português (BR)](#português)
+
+---
+## English
+
+This document consolidates the technical and functional information of the **Virtcon** system.
+
+## 1. Overview (Multi-tenant SaaS)
+
+**Virtcon** is a multi-tenant SaaS (Software as a Service) platform designed for monitoring and anomaly detection in various scenarios. The system combines agnostic IoT data ingestion, advanced statistical models, and generative artificial intelligence to transform raw sensor data into diagnoses. The platform is **metric-agnostic**, allowing the monitoring of any set of up to 4 simultaneous variables.
+
+### Architecture and Technology Stack
+*   **Backend:** Kotlin 2.3.21, Spring Boot 4.1.0, and Java 25. Asynchronous processing for data analysis and LLM integration via WebFlux.
+*   **Frontend:** React 19.2 with TanStack Start (SSR via Nitro), TypeScript 5.8, and Tailwind CSS 4.
+*   **Infrastructure:** PostgreSQL 16 (metadata), InfluxDB 2.7 (time series), Redis 7 (cache and chat history), and Mosquitto 2.0 (MQTT Broker).
+*   **Security:** Multi-tenant isolation via Hibernate Filters and AOP. JWT authentication via HttpOnly Secure cookies.
+
+---
+
+## 2. Technical Methodology: Isolation Forest and AI
+
+Virtcon's analytical core uses the **Isolation Forest (iForest)** algorithm family, implemented via the Smile (*Statistical Machine Intelligence and Learning Engine*) library, to identify deviations.
+
+### Analysis Models
+1.  **Standard iForest:** Isolates anomalies using axis-aligned random partitions.
+2.  **Extended Isolation Forest (EIF):** Uses random slope hyperplanes to mitigate artifacts in correlated data.
+3.  **Rotated Isolation Forest (RIF):** Applies random linear transformations (rotations via QR decomposition) before isolation, being robust for complex non-axis-aligned anomalies.
+4.  **Under Development (Roadmap):** Inclusion of **DBSCAN** and **Z-Score** models.
+*   **Safeguard:** Adaptive downsampling for up to 5000 points with applied aggregation notification (`X-Aggregation-Applied`).
+
+### AI-Assisted Diagnosis (Google Gemini)
+The system integrates Google Gemini to translate mathematical scores into natural language diagnoses. It uses a BYOK (Bring Your Own Key) approach with AES-256-GCM encryption for tenant keys, ensuring data privacy and sovereignty.
+
+---
+
+## 3. Main Features
+
+### Agnostic Telemetry Ingestion
+Supports real-time data sending without frequency locks:
+*   **HTTPS (REST API):** Secure communication over TLS 1.3 using the Device ID (UUID) as a unique credential, simplifying hardware integration.
+*   **MQTT:** Ideal for low-power IoT devices (ESP32/Raspberry Pi) with authentication based on device identifiers.
+
+---
+
+## 4. IoT Station: Field-Station-ESP32-S3
+
+The Virtcon ecosystem includes an implementation, the **[Field-Station-ESP32-S3](https://github.com/morustree/Field-Station-ESP32-S3)**. This IoT weather station was designed to demonstrate the feasibility of anomaly detection in real-world conditions.
+
+### Hardware Technical Characteristics
+*   **Microcontroller:** ESP32-S3 (DevKitC-1 N8R2) with SPIRAM support for efficient JSON payload management.
+*   **Sensing:** I2C integration with the **BME280** sensor (Temperature, Pressure, and Humidity) and an **LDR** sensor for luminosity measurement via ADC.
+*   **Energy Efficiency:** One-Shot architecture based on deep sleep, optimizing battery consumption for field operations.
+
+### Resilience and Analytical Integration
+*   **Local Persistence:** Uses the LittleFS file system to store telemetry in Flash in case of temporary Wi-Fi connectivity or NTP synchronization failures.
+*   **Abrupt Change Detection:** The station provides the necessary data flow for Virtcon's engines to identify sudden environmental changes.
+
+---
+
+## 5. No-Code Import of Historical Data (spreadsheets)
+Pipeline robust of two phases (ANALYZE → COMMIT) for loading large volumes (up to 1M rows):
+*   **Smart Mapping:** Jaro-Winkler algorithm for automatic header identification.
+*   **Atomic Integrity:** ACID transactions that synchronize relational and time-series databases.
+*   **Conflict Resolution:** Visual interface to manage location and sensor tag discrepancies.
+
+---
+
+## 6. Project Status
+Virtcon is in its initial stage of development (**Proof of Concept / MVP**). Although the analytical and ingestion core is functional, the following features are being implemented or refined:
+*   **Gemini AI:** Integration in process (the diagnostic engine is not yet active in production).
+*   **Export:** CSV data export functionality under development.
+*   **Visualization:** Improvement of dashboard visualizations (iForest and telemetry).
+
+---
+
+## 7. Interface and Visualization
+
+Graphs that allow the visual correlation between anomalies and variables.
+
+![iForest](./images/iforest.png)
+
+---
+
+![Infrastructure Map](./images/infrastructure-map.png)
+
+---
+## Português
+
 # Virtcon: Plataforma de Monitoramento e Detecção de Anomalias
 
 Este documento consolida as informações técnicas e funcionais do sistema **Virtcon**.
@@ -83,4 +173,3 @@ Gráficos que permitem a correlação visual entre as anomalias e as variáveis.
 ![Infrastructure Map](./images/infrastructure-map.png)
 
 ---
-

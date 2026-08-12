@@ -1,6 +1,6 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21894931.svg)](https://doi.org/10.5281/zenodo.21894931)
 
-# ESP32-S3 Field Station
+# IoT Field Station (ESP32-S3)
 
 [English (US)](#english) | [Português (BR)](#português)
 

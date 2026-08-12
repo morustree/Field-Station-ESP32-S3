@@ -190,6 +190,7 @@ save_configs
 invoke_build_flash
 launch_services
 
+echo -e "\n${YELLOW}You may need to press the RESET button on the board to start the firmware.${NC}"
 echo -e "\n${CYAN}==============================================="
 echo "          SETUP PROCESS COMPLETED!"
 echo -e "===============================================${NC}\n"

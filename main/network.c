@@ -16,6 +16,8 @@ static SemaphoreHandle_t s_mqtt_pub_sem = NULL;
 
 static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
+    (void)arg;
+    (void)event_data;
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
         esp_wifi_connect();
     } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
@@ -29,7 +31,10 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t e
 
 static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
-    esp_mqtt_event_handle_t event = event_data;
+    (void)handler_args;
+    (void)base;
+    (void)event_id;
+    const esp_mqtt_event_t *event = event_data;
     switch (event->event_id) {
         case MQTT_EVENT_CONNECTED:
             s_mqtt_connected = true;
@@ -76,12 +81,14 @@ esp_err_t network_init(const char *ssid, const char *password, const char *mqtt_
     strncpy((char *)wifi_config.sta.password, password, sizeof(wifi_config.sta.password) - 1);
 
     esp_wifi_set_mode(WIFI_MODE_STA);
-    esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config);
+    esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
     esp_wifi_start();
 
     // Wait for Wi-Fi (max 10s)
-    int retry = 0;
-    while (!s_wifi_connected && retry++ < 100) {
+    for (int retry = 0; retry < 100; retry++) {
+        if (s_wifi_connected) {
+            break;
+        }
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 
@@ -101,8 +108,10 @@ esp_err_t network_init(const char *ssid, const char *password, const char *mqtt_
     esp_mqtt_client_register_event(s_mqtt_client, ESP_EVENT_ANY_ID, mqtt_event_handler, NULL);
     esp_mqtt_client_start(s_mqtt_client);
 
-    retry = 0;
-    while (!s_mqtt_connected && retry++ < 50) {
+    for (int retry = 0; retry < 50; retry++) {
+        if (s_mqtt_connected) {
+            break;
+        }
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 
@@ -125,9 +134,11 @@ esp_err_t network_sync_time(void)
     esp_sntp_setservername(0, "pool.ntp.org");
     esp_sntp_init();
 
-    int retry = 0;
     const int max_retries = 30;
-    while (esp_sntp_get_sync_status() == SNTP_SYNC_STATUS_RESET && retry++ < max_retries) {
+    for (int retry = 0; retry < max_retries; retry++) {
+        if (esp_sntp_get_sync_status() != SNTP_SYNC_STATUS_RESET) {
+            break;
+        }
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 
@@ -152,7 +163,8 @@ esp_err_t network_publish(const char *topic, const char *payload, int qos)
     if (msg_id < 0) return ESP_FAIL;
 
     if (qos > 0) {
-        if (xSemaphoreTake(s_mqtt_pub_sem, pdMS_TO_TICKS(5000)) != pdTRUE) {
+        BaseType_t ret = xSemaphoreTake(s_mqtt_pub_sem, pdMS_TO_TICKS(5000));
+        if (ret != pdTRUE) {
             return ESP_ERR_TIMEOUT;
         }
     }

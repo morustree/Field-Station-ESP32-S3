@@ -1,0 +1,7 @@
+organization=morustree
+projectKey=morustree_Field-Station-ESP32-S3
+serverUrl=https://sonarcloud.io
+serverVersion=8.0.0.101323
+dashboardUrl=https://sonarcloud.io/dashboard?id=morustree_Field-Station-ESP32-S3
+ceTaskId=AZ_zk4tpwqltaEvwItGT
+ceTaskUrl=https://sonarcloud.io/api/ce/task?id=AZ_zk4tpwqltaEvwItGT

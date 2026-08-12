@@ -203,6 +203,7 @@ Save-Configs
 Invoke-BuildFlash
 Launch-Services
 
+Write-Host "`nYou may need to press the RESET button on the board to start the firmware." -ForegroundColor Yellow
 Write-Host "`n===============================================" -ForegroundColor Cyan
 Write-Host "          SETUP PROCESS COMPLETED!" -ForegroundColor Cyan
 Write-Host "===============================================`n" -ForegroundColor Cyan

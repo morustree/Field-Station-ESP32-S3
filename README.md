@@ -85,6 +85,11 @@ The system is powered by an external switching power supply of +5V DC / 1A.
 *   **Power via UART**: The **UART** port of the ESP32-S3 DevKitC-1 accepts 5V power. However, in the final design, direct connection to the pins was chosen.
 *   **Battery and Protection**: A battery with integrated under-voltage protection (BMS) could be used. In this case, when the battery reaches the safe limit, the BMS cuts the power and the battery is not damaged. A voltage measurement circuit for the ESP32-S3 could be assembled, but this would increase energy consumption and the number of components.
 
+
+#### ⚠️ Calibration
+
+For the environmental data collected by this station to have technical validity, it is important that the entire system undergoes a calibration process using reference standard instruments.
+
 ---
 
 ### 🚀 Quick Start Guide
@@ -259,6 +264,10 @@ O sistema é alimentado por uma fonte externa chaveada de +5V DC / 1A.
 *   **Conexão Física**: Um cabo USB-A foi modificado (extremidade cortada com fios expostos) para injetar a alimentação diretamente na protoboard. Embora o projeto conte com um cabo **USB-A para USB-C**, este é utilizado exclusivamente para gravação do firmware devido ao seu comprimento reduzido. O cabo modificado permite o alcance da fonte externa e a distribuição centralizada de energia.
 *   **Alimentação via UART**: A porta **UART** do ESP32-S3 DevKitC-1 aceita alimentação de 5V. No entanto, no design final, optou-se pela conexão direta nos pinos.
 *   **Bateria e Proteção**: Uma bateria com proteção integrada contra subtensão (BMS) poderia ser usada. Nesse caso, quando a bateria atinge o limite seguro, o BMS corta a energia e a bateria não é danificada. Um circuito para medição de tensão pelo ESP32-S3 poderia ser montado, mas isso aumentaria o consumo de energia e o número de componentes.
+
+#### ⚠️ Calibração
+
+Para que os dados ambientais coletados por esta estação tenham validade técnica, é importante que todo o sistema passe por um processo de calibração, utilizando instrumentos padrão de referência.
 
 ---
 

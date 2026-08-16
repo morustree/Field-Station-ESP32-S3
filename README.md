@@ -88,7 +88,7 @@ The system is powered by an external switching power supply of +5V DC / 1A.
 
 #### ⚠️ Calibration
 
-For the environmental data collected by this station to have technical validity, it is important that the entire system undergoes a calibration process using reference standard instruments.
+If there is an intent to use this system for practical purposes and ensure the collected environmental data has technical validity, it is important that the entire system undergoes a formal calibration process using reference standard instruments.
 
 ---
 
@@ -267,7 +267,7 @@ O sistema é alimentado por uma fonte externa chaveada de +5V DC / 1A.
 
 #### ⚠️ Calibração
 
-Para que os dados ambientais coletados por esta estação tenham validade técnica, é importante que todo o sistema passe por um processo de calibração, utilizando instrumentos padrão de referência.
+Se houver o intuito de utilizar este sistema para fins práticos e garantir que os dados ambientais coletados tenham validade técnica, é importante que todo o sistema passe por um processo de calibração formal utilizando instrumentos padrão de referência.
 
 ---
 

@@ -19,7 +19,35 @@ This document consolidates the technical and functional information of the **Vir
 
 ---
 
-## 2. Technical Methodology: Isolation Forest and AI
+## 2. Intelligent Diagnostic Layer
+
+**Google Gemini** can transform multivariate anomaly scores and telemetry metadata into insights, identifying subtle correlations between physical variables and anomalous behaviors. Through grounding techniques, the AI contextualizes the monitored physical variables with the economic activity and site location, facilitating technical decision-making through a conversational interface. 
+
+Among the models in the Gemini family, the Gemini Pro version was identified as the most suitable, as it offers a superior capacity for advanced statistical reasoning. 
+
+### Theoretical Foundation and Architecture Inspired by DS-STAR
+
+The capacity of language models to perform structured analyses and rigorous diagnostics is grounded in research from Google Research, such as the **[DS-STAR](Data Science Agent via Iterative Planning and Verification)** study (a data science agent that automates statistical analyses). Google's study demonstrates that DS-STAR's iterative architecture drastically increases accuracy in table analysis (CSV, JSON) and time series, as the agent prevents numerical hallucinations or premature diagnostics from passing without quantitative validation. 
+
+Virtcon uses Gemini Pro and applies the architectural principles of DS-STAR: 
+
+* The backend (Spring Boot / Kotlin via the *Smile* library) executes Machine Learning computations over the telemetry series.
+* A statistical summary of the results, variation ranges, location, and field of activity is sent to Gemini Pro.
+* The application can implement a routine in which Gemini Pro generates or executes complementary statistical analyses and goes through an automatic verification step before displaying the final diagnosis and insights to the user, ensuring high statistical precision and token optimization per message.
+
+To learn more:
+
+**[DS-STAR: A state-of-the-art versatile data science agent](https://research-google.translate.goog/blog/ds-star-a-state-of-the-art-versatile-data-science-agent/?_x_tr_sl=en&_x_tr_tl=pt&_x_tr_hl=pt&_x_tr_pto=tc)**
+
+**[DS-STAR: Data Science Agent via Iterative Planning and Verification](https://research.google/pubs/ds-star-data-science-agent-via-iterative-planning-and-verification/)**
+
+**[Evaluating and enhancing probabilistic reasoning in language models](https://research.google/blog/evaluating-and-enhancing-probabilistic-reasoning-in-language-models/)**
+
+**[Chain-of-table: Evolving tables in the reasoning chain for table understanding](https://research.google/blog/chain-of-table-evolving-tables-in-the-reasoning-chain-for-table-understanding/)**
+
+---
+
+## 3. Isolation Forest and AI
 
 Virtcon's analytical core uses the **Isolation Forest (iForest)** algorithm family, implemented via the Smile (*Statistical Machine Intelligence and Learning Engine*) library, to identify deviations.
 
@@ -35,7 +63,7 @@ The system integrates Google Gemini to translate mathematical scores into natura
 
 ---
 
-## 3. Main Features
+## 4. Main Features
 
 ### Agnostic Telemetry Ingestion
 Supports real-time data sending without frequency locks:
@@ -44,7 +72,7 @@ Supports real-time data sending without frequency locks:
 
 ---
 
-## 4. IoT Station: Field-Station-ESP32-S3
+## 5. IoT Station: Field-Station-ESP32-S3
 
 The Virtcon ecosystem includes an implementation, the **[Field-Station-ESP32-S3](https://github.com/morustree/Field-Station-ESP32-S3)**. This IoT weather station was designed to demonstrate the feasibility of anomaly detection in real-world conditions.
 
@@ -59,7 +87,7 @@ The Virtcon ecosystem includes an implementation, the **[Field-Station-ESP32-S3]
 
 ---
 
-## 5. No-Code Import of Historical Data (spreadsheets)
+## 6. No-Code Import of Historical Data (spreadsheets)
 Pipeline robust of two phases (ANALYZE → COMMIT) for loading large volumes (up to 1M rows):
 *   **Smart Mapping:** Jaro-Winkler algorithm for automatic header identification.
 *   **Atomic Integrity:** ACID transactions that synchronize relational and time-series databases.
@@ -67,7 +95,7 @@ Pipeline robust of two phases (ANALYZE → COMMIT) for loading large volumes (up
 
 ---
 
-## 6. Project Status
+## 7. Project Status
 Virtcon is in its initial stage of development (**Proof of Concept / MVP**). Although the analytical and ingestion core is functional, the following features are being implemented or refined:
 *   **Gemini AI:** Integration in process (the diagnostic engine is not yet active in production).
 *   **Export:** CSV data export functionality under development.
@@ -75,7 +103,7 @@ Virtcon is in its initial stage of development (**Proof of Concept / MVP**). Alt
 
 ---
 
-## 7. Interface and Visualization
+## 8. Interface and Visualization
 
 Graphs that allow the visual correlation between anomalies and variables.
 
@@ -106,7 +134,33 @@ O **Virtcon** é uma plataforma SaaS (Software as a Service) multi-tenant projet
 
 ---
 
-## 2. Metodologia Técnica: Isolation Forest e IA
+## 2. Camada de Diagnóstico Inteligente
+
+O **Google Gemini** pode transformar scores de anomalia multivariados e metadados de telemetria em insights, identificando correlações sutis entre variáveis físicas e comportamentos anômalos. Através de técnicas de grounding, a IA contextualiza as variáveis físicas monitoradas com a atividade econômica e localização do site, facilitando a tomada de decisão técnica por meio de uma interface conversacional.
+
+Entre os modelos da família Gemini, a versão Gemini Pro foi identificada como a mais adequada por oferecer uma capacidade superior de raciocínio estatístico avançado.
+
+
+#### Fundamentação Teórica e Arquitetura Inspirada no DS-STAR
+
+A capacidade de modelos de linguagem realizarem análises estruturadas e diagnósticos rigorosos é fundamentada por pesquisas da Google Research, como o estudo do **[DS-STAR](Data Science Agent via Iterative Planning and Verification)** (um agente de ciência de dados que automatiza análises estatísticas). O estudo da Google demonstra que a arquitetura iterativa do DS-STAR eleva drasticamente a precisão na análise de tabelas (CSV, JSON) e séries temporais, pois o agente impede que alucinações numéricas ou diagnósticos precipitados passem sem validação quantitativa.
+O Virtcon usa o Gemini Pro e aplica os princípios arquiteturais do DS-STAR:
+* O backend (Spring Boot / Kotlin via biblioteca *Smile*) executa a computação de Machine Learning sobre as séries de telemetria.
+* Um resumo estatístico dos resultados, das faixas de variação, da localização e do ramo de atividade é enviado ao Gemini Pro.
+* A aplicação poderá implementar uma rotina em que o Gemini Pro gera ou executa análises estatísticas complementares e passa por uma etapa de verificação automática antes de exibir o diagnóstico final e os insights ao usuário, assegurando alta precisão estatística e otimização de tokens por mensagem.
+Para saber mais:
+
+**[DS-STAR: A state-of-the-art versatile data science agent](https://research-google.translate.goog/blog/ds-star-a-state-of-the-art-versatile-data-science-agent/?_x_tr_sl=en&_x_tr_tl=pt&_x_tr_hl=pt&_x_tr_pto=tc)**
+
+**[DS-STAR: Data Science Agent via Iterative Planning and Verification](https://research.google/pubs/ds-star-data-science-agent-via-iterative-planning-and-verification/)**
+
+**[Evaluating and enhancing probabilistic reasoning in language models](https://research.google/blog/evaluating-and-enhancing-probabilistic-reasoning-in-language-models/)**
+
+**[Chain-of-table: Evolving tables in the reasoning chain for table understanding](https://research.google/blog/chain-of-table-evolving-tables-in-the-reasoning-chain-for-table-understanding/)**
+
+---
+
+## 3. Metodologia Técnica: Isolation Forest e IA
 
 O núcleo analítico do Virtcon utiliza a família de algoritmos **Isolation Forest (iForest)**, implementada via biblioteca Smile (*Statistical Machine Intelligence and Learning Engine*), para identificação de desvios.
 
@@ -122,7 +176,7 @@ O sistema integra o Google Gemini para traduzir scores matemáticos em diagnóst
 
 ---
 
-## 3. Funcionalidades Principais
+## 4. Funcionalidades Principais
 
 ### Ingestão Agnóstica de Telemetria
 Suporta o envio de dados em tempo real sem travas de frequência:
@@ -131,7 +185,7 @@ Suporta o envio de dados em tempo real sem travas de frequência:
 
 ---
 
-## 4. Estação IoT: Field-Station-ESP32-S3
+## 5. Estação IoT: Field-Station-ESP32-S3
 
 O ecossistema Virtcon inclui uma implementação, a **[Field-Station-ESP32-S3](https://github.com/morustree/Field-Station-ESP32-S3)**. Esta estação meteorológica IoT foi projetada para demonstrar a viabilidade da detecção de anomalias em condições reais.
 
@@ -146,7 +200,7 @@ O ecossistema Virtcon inclui uma implementação, a **[Field-Station-ESP32-S3](h
 
 ---
 
-## 5. Importação No-Code de Dados Históricos (planilhas)
+## 6. Importação No-Code de Dados Históricos (planilhas)
 Pipeline robusto de duas fases (ANALYZE → COMMIT) para carga de grandes volumes (até 1M linhas):
 *   **Mapeamento Inteligente:** Algoritmo Jaro-Winkler para identificação automática de cabeçalhos.
 *   **Integridade Atômica:** Transações ACID que sincronizam bancos relacionais e de séries temporais.
@@ -154,7 +208,7 @@ Pipeline robusto de duas fases (ANALYZE → COMMIT) para carga de grandes volume
 
 ---
 
-## 6. Status do Projeto
+## 7. Status do Projeto
 O Virtcon encontra-se em estágio inicial de desenvolvimento (**Proof of Concept / MVP**). Embora o núcleo analítico e de ingestão esteja funcional, os seguintes recursos estão em fase de implementação ou refinamento:
 *   **Gemini AI:** Integração em processamento (o motor de diagnóstico ainda não está ativo em produção).
 *   **Exportação:** Funcionalidade de exportação de dados em CSV em desenvolvimento.
@@ -162,7 +216,7 @@ O Virtcon encontra-se em estágio inicial de desenvolvimento (**Proof of Concept
 
 ---
 
-## 7. Interface e Visualização
+## 8. Interface e Visualização
 
 Gráficos que permitem a correlação visual entre as anomalias e as variáveis.
 

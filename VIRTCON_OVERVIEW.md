@@ -27,7 +27,7 @@ Among the models in the Gemini family, the Gemini Pro version was identified as 
 
 ### Theoretical Foundation and Architecture Inspired by DS-STAR
 
-The capacity of language models to perform structured analyses and rigorous diagnostics is grounded in research from Google Research, such as the **[DS-STAR](Data Science Agent via Iterative Planning and Verification)** study (a data science agent that automates statistical analyses). Google's study demonstrates that DS-STAR's iterative architecture drastically increases accuracy in table analysis (CSV, JSON) and time series, as the agent prevents numerical hallucinations or premature diagnostics from passing without quantitative validation. 
+The capacity of language models to perform structured analyses and rigorous diagnostics is grounded in research from Google Research, such as the **[DS-STAR](https://research.google/pubs/ds-star-data-science-agent-via-iterative-planning-and-verification/)** (a data science agent that automates statistical analyses). Google's study demonstrates that DS-STAR's iterative architecture drastically increases accuracy in table analysis (CSV, JSON) and time series, as the agent prevents numerical hallucinations or premature diagnostics from passing without quantitative validation. 
 
 Virtcon uses Gemini Pro and applies the architectural principles of DS-STAR: 
 
@@ -143,11 +143,12 @@ Entre os modelos da família Gemini, a versão Gemini Pro foi identificada como 
 
 #### Fundamentação Teórica e Arquitetura Inspirada no DS-STAR
 
-A capacidade de modelos de linguagem realizarem análises estruturadas e diagnósticos rigorosos é fundamentada por pesquisas da Google Research, como o estudo do **[DS-STAR](Data Science Agent via Iterative Planning and Verification)** (um agente de ciência de dados que automatiza análises estatísticas). O estudo da Google demonstra que a arquitetura iterativa do DS-STAR eleva drasticamente a precisão na análise de tabelas (CSV, JSON) e séries temporais, pois o agente impede que alucinações numéricas ou diagnósticos precipitados passem sem validação quantitativa.
+A capacidade de modelos de linguagem realizarem análises estruturadas e diagnósticos rigorosos é fundamentada por estudos da Google Research, como o **[DS-STAR](https://research.google/pubs/ds-star-data-science-agent-via-iterative-planning-and-verification/)** (um agente de ciência de dados que automatiza análises estatísticas). O estudo da Google demonstra que a arquitetura iterativa do DS-STAR eleva drasticamente a precisão na análise de tabelas (CSV, JSON) e séries temporais, pois o agente impede que alucinações numéricas ou diagnósticos precipitados passem sem validação quantitativa.
 O Virtcon usa o Gemini Pro e aplica os princípios arquiteturais do DS-STAR:
 * O backend (Spring Boot / Kotlin via biblioteca *Smile*) executa a computação de Machine Learning sobre as séries de telemetria.
 * Um resumo estatístico dos resultados, das faixas de variação, da localização e do ramo de atividade é enviado ao Gemini Pro.
 * A aplicação poderá implementar uma rotina em que o Gemini Pro gera ou executa análises estatísticas complementares e passa por uma etapa de verificação automática antes de exibir o diagnóstico final e os insights ao usuário, assegurando alta precisão estatística e otimização de tokens por mensagem.
+
 Para saber mais:
 
 **[DS-STAR: A state-of-the-art versatile data science agent](https://research-google.translate.goog/blog/ds-star-a-state-of-the-art-versatile-data-science-agent/?_x_tr_sl=en&_x_tr_tl=pt&_x_tr_hl=pt&_x_tr_pto=tc)**

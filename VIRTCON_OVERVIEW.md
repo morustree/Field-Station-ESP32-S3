@@ -161,7 +161,7 @@ Para saber mais:
 
 ---
 
-## 3. Metodologia Técnica: Isolation Forest e IA
+## 3. Isolation Forest e IA
 
 O núcleo analítico do Virtcon utiliza a família de algoritmos **Isolation Forest (iForest)**, implementada via biblioteca Smile (*Statistical Machine Intelligence and Learning Engine*), para identificação de desvios.
 
